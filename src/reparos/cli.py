@@ -5,7 +5,11 @@ import csv
 import json
 from pathlib import Path
 
-from reparos.data import prepare_improvement_regression_sets, prepare_reparos_data
+from reparos.data import (
+    prepare_improvement_regression_sets,
+    prepare_query_group_split,
+    prepare_reparos_data,
+)
 
 
 def _tokenizer_model(value: str) -> Path:
@@ -33,6 +37,16 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument('--weak-feedback', default=None, help='CSV: user_query,corrected_query,corrected_query_ctr')
     prepare.add_argument('--minimum-feedback-ctr', type=float, default=0.1)
 
+    resplit = subparsers.add_parser(
+        'resplit-query-groups',
+        help='re-split clean corpora by normalized query text to prevent leakage',
+    )
+    resplit.add_argument('--data', required=True)
+    resplit.add_argument('--output', required=True)
+    resplit.add_argument('--train-ratio', type=float, default=0.8)
+    resplit.add_argument('--validation-ratio', type=float, default=0.1)
+    resplit.add_argument('--seed', type=int, default=2026)
+
     evaluation = subparsers.add_parser(
         'prepare-eval',
         help='build 90/10 head-tail Improvement and Regression sets',
@@ -41,6 +55,17 @@ def build_parser() -> argparse.ArgumentParser:
     evaluation.add_argument('--output', required=True)
     evaluation.add_argument('--examples-per-set', type=int, default=0)
     evaluation.add_argument('--seed', type=int, default=2026)
+
+    pilot = subparsers.add_parser(
+        'prepare-vietnamese-pilot',
+        help='build a stratified Vietnamese search pilot separate from the paper baseline',
+    )
+    pilot.add_argument('--data', required=True, help='group-split clean corpus root')
+    pilot.add_argument('--output', required=True)
+    pilot.add_argument('--train-per-class', type=int, default=4096)
+    pilot.add_argument('--validation-per-class', type=int, default=512)
+    pilot.add_argument('--train-clean-multiplier', type=int, default=1)
+    pilot.add_argument('--seed', type=int, default=2026)
 
     tokenizer = subparsers.add_parser('train-tokenizer', help='train an 8K SentencePiece model from Base train data')
     tokenizer.add_argument('--data', required=True)
@@ -137,6 +162,15 @@ def main() -> int:
         )
         print(json.dumps(manifest, indent=2, ensure_ascii=False))
         return 0
+    if args.command == 'resplit-query-groups':
+        manifest = prepare_query_group_split(
+            args.data, args.output,
+            train_ratio=args.train_ratio,
+            validation_ratio=args.validation_ratio,
+            seed=args.seed,
+        )
+        print(json.dumps(manifest, indent=2, ensure_ascii=False))
+        return 0
     if args.command == 'prepare-eval':
         counts = prepare_improvement_regression_sets(
             args.labeled_queries,
@@ -145,6 +179,17 @@ def main() -> int:
             seed=args.seed,
         )
         print(json.dumps({'output': args.output, **counts}, indent=2, ensure_ascii=False))
+        return 0
+    if args.command == 'prepare-vietnamese-pilot':
+        from reparos.pilot import prepare_vietnamese_search_pilot
+        manifest = prepare_vietnamese_search_pilot(
+            args.data, args.output,
+            train_per_class=args.train_per_class,
+            validation_per_class=args.validation_per_class,
+            train_clean_multiplier=args.train_clean_multiplier,
+            seed=args.seed,
+        )
+        print(json.dumps(manifest, indent=2, ensure_ascii=False))
         return 0
     if args.command == 'train-tokenizer':
         from reparos.config import TokenizerConfig

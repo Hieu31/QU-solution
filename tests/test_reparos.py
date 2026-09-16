@@ -48,6 +48,35 @@ class ReparoSTests(unittest.TestCase):
             with self.assertRaises(ValueError):
                 require_matching_checksum(path, first)
 
+    def test_query_group_resplit_is_disjoint_and_deterministic(self) -> None:
+        from reparos.data import prepare_query_group_split
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'source'
+            rows = {
+                'train': ['Hồ Gươm', 'Sân bay Nội Bài', 'Trùng Tên'],
+                'validation': ['hồ   gươm', 'Bệnh viện Bạch Mai', 'trùng tên'],
+                'test': ['HỒ GƯƠM', 'Ga Hà Nội', 'TRÙNG TÊN'],
+            }
+            for split, values in rows.items():
+                folder = source / split
+                folder.mkdir(parents=True)
+                (folder / 'corpus.txt').write_text('\n'.join(values) + '\n', encoding='utf-8')
+            first = prepare_query_group_split(source, root / 'first', seed=7)
+            second = prepare_query_group_split(source, root / 'second', seed=7)
+            self.assertEqual(first['counts'], second['counts'])
+            self.assertEqual(first['overlaps'], {
+                'train_validation': 0, 'train_test': 0, 'validation_test': 0,
+            })
+            locations = {}
+            for split in ('train', 'validation', 'test'):
+                values = (root / 'first' / split / 'corpus.txt').read_text(
+                    encoding='utf-8'
+                ).splitlines()
+                for value in values:
+                    locations.setdefault(' '.join(value.casefold().split()), set()).add(split)
+            self.assertTrue(all(len(splits) == 1 for splits in locations.values()))
+
     def test_query_metrics_include_clean_regression_and_topk(self) -> None:
         metrics = evaluate_queries(
             ['clean', 'eror', 'bad'],
@@ -106,6 +135,27 @@ class ReparoSTests(unittest.TestCase):
             self.assertEqual(command[command.index('-n_best') + 1], '2')
             self.assertEqual(command[command.index('-max_length') + 1], '37')
             self.assertEqual(command[command.index('-block_ngram_repeat') + 1], '3')
+
+    def test_opennmt_vocabulary_uses_all_training_examples(self) -> None:
+        from reparos.training.opennmt import build_opennmt_vocabulary
+        with tempfile.TemporaryDirectory() as directory, mock.patch(
+            'reparos.training.opennmt._require_opennmt'
+        ), mock.patch('reparos.training.opennmt.subprocess.run') as run:
+            root = Path(directory)
+            src_vocab = root / 'vocab.src'
+            tgt_vocab = root / 'vocab.tgt'
+            src_vocab.write_text('token\t1\n', encoding='utf-8')
+            tgt_vocab.write_text('token\t1\n', encoding='utf-8')
+            config = root / 'opennmt-base.json'
+            config.write_text(json.dumps({
+                'src_vocab': str(src_vocab),
+                'tgt_vocab': str(tgt_vocab),
+            }), encoding='utf-8')
+
+            build_opennmt_vocabulary(config)
+
+            command = run.call_args.args[0]
+            self.assertEqual(command[command.index('-n_sample') + 1], '-1')
 
     def test_ablation_plan_is_controlled_and_does_not_train(self) -> None:
         from reparos.ablation import build_base_ablation_plan
@@ -193,6 +243,81 @@ class ReparoSTests(unittest.TestCase):
         second = noisy_query(clean, 'edit_compounding', random.Random(7), {})
         self.assertEqual(first, second)
         self.assertNotEqual(first, clean)
+
+    def test_vietnamese_pilot_is_stratified_and_group_disjoint(self) -> None:
+        from reparos.pilot import ERROR_CLASSES, prepare_vietnamese_search_pilot
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for split, offset in (('train', 0), ('validation', 100)):
+                folder = root / 'clean' / split
+                folder.mkdir(parents=True)
+                rows = [f'đường nguyễn trãi số {offset + index}' for index in range(20)]
+                (folder / 'corpus.txt').write_text('\n'.join(rows) + '\n', encoding='utf-8')
+            output = root / 'pilot'
+            manifest = prepare_vietnamese_search_pilot(
+                root / 'clean', output, train_per_class=5, validation_per_class=4,
+            )
+            self.assertTrue(manifest['group_split_verified'])
+            self.assertFalse(manifest['test_split_used'])
+            for split, expected in (('train', 5), ('validation', 4)):
+                metadata = [
+                    json.loads(line) for line in
+                    (output / 'base' / f'{split}.meta.jsonl').read_text(encoding='utf-8').splitlines()
+                ]
+                counts = {kind: 0 for kind in ERROR_CLASSES}
+                for row in metadata:
+                    counts[row['error_class']] += 1
+                self.assertEqual(counts, {kind: expected for kind in ERROR_CLASSES})
+            train_groups = {
+                json.loads(line)['group_id'] for line in
+                (output / 'base' / 'train.meta.jsonl').read_text(encoding='utf-8').splitlines()
+            }
+            validation_groups = {
+                json.loads(line)['group_id'] for line in
+                (output / 'base' / 'validation.meta.jsonl').read_text(encoding='utf-8').splitlines()
+            }
+            self.assertFalse(train_groups & validation_groups)
+
+    def test_vietnamese_pilot_drops_validation_groups_seen_in_train(self) -> None:
+        from reparos.pilot import prepare_vietnamese_search_pilot
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            train = root / 'clean' / 'train'
+            validation = root / 'clean' / 'validation'
+            train.mkdir(parents=True)
+            validation.mkdir(parents=True)
+            shared = 'đường nguyễn trãi số 1'
+            train_rows = [shared] + [f'đường lê lợi số {index}' for index in range(20)]
+            validation_rows = [shared] + [f'đường hai bà trưng số {index}' for index in range(20)]
+            (train / 'corpus.txt').write_text('\n'.join(train_rows) + '\n', encoding='utf-8')
+            (validation / 'corpus.txt').write_text(
+                '\n'.join(validation_rows) + '\n', encoding='utf-8'
+            )
+            output = root / 'pilot'
+            prepare_vietnamese_search_pilot(
+                root / 'clean', output, train_per_class=10, validation_per_class=10,
+            )
+            validation_targets = (
+                output / 'base' / 'validation.tgt'
+            ).read_text(encoding='utf-8').splitlines()
+            self.assertNotIn(shared, validation_targets)
+
+    def test_vietnamese_pilot_clean_multiplier_only_changes_train(self) -> None:
+        from reparos.pilot import prepare_vietnamese_search_pilot
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for split, offset in (('train', 0), ('validation', 100)):
+                folder = root / 'clean' / split
+                folder.mkdir(parents=True)
+                rows = [f'đường trần phú số {offset + index}' for index in range(30)]
+                (folder / 'corpus.txt').write_text('\n'.join(rows) + '\n', encoding='utf-8')
+            manifest = prepare_vietnamese_search_pilot(
+                root / 'clean', root / 'pilot',
+                train_per_class=4, validation_per_class=3, train_clean_multiplier=3,
+            )
+            self.assertEqual(manifest['counts']['train']['clean'], 12)
+            self.assertEqual(manifest['counts']['train']['edit'], 4)
+            self.assertEqual(manifest['counts']['validation']['clean'], 3)
 
     def test_prepare_writes_curriculum_and_marks_missing_private_data(self) -> None:
         with tempfile.TemporaryDirectory() as directory:

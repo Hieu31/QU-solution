@@ -4,11 +4,98 @@ import csv
 import hashlib
 import json
 import random
+import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 
 
 PROFILE = 'reparos-2023-osm-substitute/v1'
+
+
+def normalized_query_group(text: str) -> str:
+    return ' '.join(unicodedata.normalize('NFKC', text).casefold().split())
+
+
+def prepare_query_group_split(
+    prepared_data: str | Path,
+    output: str | Path,
+    *,
+    train_ratio: float = 0.8,
+    validation_ratio: float = 0.1,
+    seed: int = 2026,
+) -> dict[str, object]:
+    if not 0 < train_ratio < 1 or not 0 <= validation_ratio < 1:
+        raise ValueError('invalid train or validation ratio')
+    if train_ratio + validation_ratio >= 1:
+        raise ValueError('train_ratio + validation_ratio must be below 1')
+    source_root, output_root = Path(prepared_data), Path(output)
+    sources = [source_root / split / 'corpus.txt' for split in ('train', 'validation', 'test')]
+    missing = [str(path) for path in sources if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f'missing source corpora: {missing}')
+    for split in ('train', 'validation', 'test'):
+        (output_root / split).mkdir(parents=True, exist_ok=True)
+    streams = {
+        split: (output_root / split / 'corpus.txt').open('w', encoding='utf-8', newline='\n')
+        for split in ('train', 'validation', 'test')
+    }
+    counts: Counter[str] = Counter()
+    groups: dict[str, set[bytes]] = {split: set() for split in streams}
+    train_cutoff = int(train_ratio * 1_000_000)
+    validation_cutoff = int((train_ratio + validation_ratio) * 1_000_000)
+    try:
+        for source in sources:
+            with source.open(encoding='utf-8') as input_stream:
+                for line in input_stream:
+                    clean = ' '.join(line.split())
+                    if not clean:
+                        continue
+                    normalized = normalized_query_group(clean)
+                    digest = hashlib.blake2b(
+                        f'{seed}:{normalized}'.encode('utf-8'), digest_size=16,
+                    ).digest()
+                    bucket = int.from_bytes(digest[:8], 'big') % 1_000_000
+                    split = (
+                        'train' if bucket < train_cutoff else
+                        'validation' if bucket < validation_cutoff else
+                        'test'
+                    )
+                    streams[split].write(clean + '\n')
+                    counts[f'{split}_rows'] += 1
+                    groups[split].add(digest)
+    finally:
+        for stream in streams.values():
+            stream.close()
+    overlaps = {
+        'train_validation': len(groups['train'] & groups['validation']),
+        'train_test': len(groups['train'] & groups['test']),
+        'validation_test': len(groups['validation'] & groups['test']),
+    }
+    if any(overlaps.values()):
+        raise AssertionError(f'query-group split leaked: {overlaps}')
+    manifest: dict[str, object] = {
+        'profile': 'normalized-query-group-split/v1',
+        'source': str(source_root.resolve()),
+        'seed': seed,
+        'ratios': {
+            'train': train_ratio,
+            'validation': validation_ratio,
+            'test': 1 - train_ratio - validation_ratio,
+        },
+        'normalization': 'Unicode NFKC + casefold + collapsed whitespace',
+        'counts': {
+            split: {
+                'rows': counts[f'{split}_rows'],
+                'unique_query_groups': len(groups[split]),
+            }
+            for split in ('train', 'validation', 'test')
+        },
+        'overlaps': overlaps,
+    }
+    (output_root / 'group-split-manifest.json').write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+    )
+    return manifest
 
 
 def _rng(seed: int, *parts: object) -> random.Random:

@@ -142,7 +142,14 @@ def build_opennmt_vocabulary(config: str | Path) -> None:
     _require_opennmt()
     config_path = Path(config)
     subprocess.run(
-        [sys.executable, '-m', 'onmt.bin.build_vocab', '-config', str(config_path)],
+        [
+            sys.executable, '-m', 'onmt.bin.build_vocab',
+            '-config', str(config_path),
+            # OpenNMT-py defaults to only 5,000 transformed examples. That can
+            # silently shrink an 8K SentencePiece vocabulary on heterogeneous
+            # search data, especially for Vietnamese diacritics and rare POIs.
+            '-n_sample', '-1',
+        ],
         check=True,
     )
     # OpenNMT-py 3.5 writes CRLF on Windows but its vocabulary reader splits
