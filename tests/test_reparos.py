@@ -145,13 +145,17 @@ class ReparoSTests(unittest.TestCase):
                 (base / f'{split}.tgt').write_text('hello\n', encoding='utf-8')
             tokenizer = root / 'tokenizer.model'
             tokenizer.write_bytes(b'fixture')
-            path = build_opennmt_config(root / 'data', tokenizer, root / 'run', train_steps=10)
+            path = build_opennmt_config(
+                root / 'data', tokenizer, root / 'run', train_steps=10,
+                model_dtype='fp16',
+            )
             state = json.loads(path.read_text(encoding='utf-8'))
             self.assertEqual(state['enc_layers'], 1)
             self.assertEqual(state['dec_layers'], 1)
             self.assertEqual(state['heads'], 8)
             self.assertEqual(state['hidden_size'], 128)
             self.assertEqual(state['self_attn_type'], 'scaled-dot')
+            self.assertEqual(state['model_dtype'], 'fp16')
             self.assertEqual(state['train_steps'], 10)
             self.assertEqual(state['data']['corpus_1']['transforms'], ['sentencepiece'])
             resolved = json.loads((root / 'run' / 'resolved-architecture.json').read_text(encoding='utf-8'))

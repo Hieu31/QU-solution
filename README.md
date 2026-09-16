@@ -369,6 +369,13 @@ uv run reparos build-opennmt-config `
 The tokenizer/config commands are preparation only. Run vocabulary building and
 the long OpenNMT training job separately on the selected GPU host.
 
+For Kaggle T4, use `notebook/train_reparos_kaggle.ipynb`. Attach a Kaggle
+Dataset containing `reparos-production-v1.zip`, enable GPU and Internet, then
+run the notebook from the top. Outputs are written to `/kaggle/working` and the
+final cell creates a downloadable artifact ZIP. To continue in a later session,
+attach the previous Kaggle output as a Dataset and set `RESUME_RUN_DIR` plus
+`RESUME_TOKENIZER_MODEL` in the configuration cell.
+
 ```powershell
 uv run reparos prepare-eval `
   --labeled-queries data\typed\xanh-sm-labeled-v1.csv `

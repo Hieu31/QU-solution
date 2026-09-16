@@ -32,12 +32,15 @@ def build_opennmt_config(
     transformer_ff: int = 512,
     dropout: float = 0.1,
     warmup_steps: int = 4000,
+    model_dtype: str = 'fp32',
     gpu_rank: int | None = None,
 ) -> Path:
     if bucket_size < 1 or num_workers < 0 or transformer_ff < 1 or warmup_steps < 0:
         raise ValueError('invalid bucket, worker, FFN, or warmup setting')
     if not 0 <= dropout < 1:
         raise ValueError('dropout must be in [0, 1)')
+    if model_dtype not in {'fp32', 'fp16'}:
+        raise ValueError('model_dtype must be fp32 or fp16')
     data_root, tokenizer, output_root = Path(data), Path(tokenizer_model), Path(output)
     files = {
         'train_src': data_root / 'base' / 'train.src',
@@ -87,6 +90,7 @@ def build_opennmt_config(
         'self_attn_type': 'scaled-dot',
         'dropout': [dropout],
         'attention_dropout': [dropout],
+        'model_dtype': model_dtype,
         'param_init': 0.0,
         'param_init_glorot': True,
         'optim': 'adam',

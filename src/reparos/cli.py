@@ -123,6 +123,7 @@ def build_parser() -> argparse.ArgumentParser:
     onmt_config.add_argument('--transformer-ff', type=int, default=512)
     onmt_config.add_argument('--dropout', type=float, default=0.1)
     onmt_config.add_argument('--warmup-steps', type=int, default=4000)
+    onmt_config.add_argument('--model-dtype', choices=('fp32', 'fp16'), default='fp32')
     onmt_config.add_argument('--gpu-rank', type=int, default=None)
 
     ablation = subparsers.add_parser('plan-opennmt-ablation', help='write controlled Base ablation configs without training')
@@ -260,6 +261,7 @@ def main() -> int:
             batch_size=args.batch_size, bucket_size=args.bucket_size,
             num_workers=args.num_workers, transformer_ff=args.transformer_ff,
             dropout=args.dropout, warmup_steps=args.warmup_steps,
+            model_dtype=args.model_dtype,
             gpu_rank=args.gpu_rank,
         )
         print(json.dumps({'config': str(path)}, indent=2))
