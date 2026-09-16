@@ -16,6 +16,7 @@ reparos-opennmt = ["OpenNMT-py>=3.5,<4", "torch>=2.2,<2.3", "numpy>=1.26,<2", "s
 [project.scripts]
 webspell = "webspell.cli:main"
 reparos = "reparos.cli:main"
+benchmark-three = "benchmarking.cli:main"
 
 [build-system]
 requires = ["setuptools>=68"]
@@ -23,4 +24,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["webspell*", "reparos*"]
+include = ["webspell*", "reparos*", "benchmarking*"]

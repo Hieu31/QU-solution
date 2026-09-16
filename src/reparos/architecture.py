@@ -14,6 +14,10 @@ class DecodingConfig:
     min_decoding_length: int = 0
     max_decoding_length: int = 100
     length_penalty: float = 1.0
+    # OpenNMT-py `-length_penalty avg -alpha 1` and CTranslate2 use different
+    # numeric conventions. CT2=0 reproduces OpenNMT average-score ranking for
+    # converted OpenNMT-py checkpoints.
+    ctranslate2_length_penalty: float = 0.0
     coverage_penalty: float = 0.0
     patience: float = 1.0
     no_repeat_ngram_size: int = 0
@@ -24,7 +28,7 @@ class DecodingConfig:
             raise ValueError('num_hypotheses must be between 1 and beam_size')
         if self.min_decoding_length < 0 or self.max_decoding_length < self.min_decoding_length:
             raise ValueError('invalid decoding length bounds')
-        if self.length_penalty < 0 or self.coverage_penalty < 0 or self.patience < 1:
+        if self.length_penalty < 0 or self.ctranslate2_length_penalty < 0 or self.coverage_penalty < 0 or self.patience < 1:
             raise ValueError('invalid decoding penalty or patience')
 
     def to_dict(self) -> dict[str, object]:

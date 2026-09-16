@@ -91,7 +91,7 @@ class CTranslate2Predictor:
             [pieces], beam_size=settings.beam_size,
             patience=settings.patience,
             num_hypotheses=settings.num_hypotheses,
-            length_penalty=settings.length_penalty,
+            length_penalty=settings.ctranslate2_length_penalty,
             coverage_penalty=settings.coverage_penalty,
             no_repeat_ngram_size=settings.no_repeat_ngram_size,
             disable_unk=settings.disable_unk,
