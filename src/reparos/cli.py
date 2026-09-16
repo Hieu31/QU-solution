@@ -7,6 +7,7 @@ from pathlib import Path
 
 from reparos.data import (
     prepare_improvement_regression_sets,
+    prepare_production_data,
     prepare_query_group_split,
     prepare_reparos_data,
 )
@@ -36,6 +37,13 @@ def build_parser() -> argparse.ArgumentParser:
     prepare.add_argument('--phonetic-pairs', default=None, help='CSV: correct_word,phonetic_variant')
     prepare.add_argument('--weak-feedback', default=None, help='CSV: user_query,corrected_query,corrected_query_ctr')
     prepare.add_argument('--minimum-feedback-ctr', type=float, default=0.1)
+
+    production = subparsers.add_parser(
+        'prepare-production',
+        help='convert leak-free WebSpell pairs to ReparoS data without resampling',
+    )
+    production.add_argument('--data', required=True, help='prepared WebSpell root')
+    production.add_argument('--output', required=True)
 
     resplit = subparsers.add_parser(
         'resplit-query-groups',
@@ -160,6 +168,10 @@ def main() -> int:
             weak_feedback=args.weak_feedback,
             minimum_feedback_ctr=args.minimum_feedback_ctr,
         )
+        print(json.dumps(manifest, indent=2, ensure_ascii=False))
+        return 0
+    if args.command == 'prepare-production':
+        manifest = prepare_production_data(args.data, args.output)
         print(json.dumps(manifest, indent=2, ensure_ascii=False))
         return 0
     if args.command == 'resplit-query-groups':

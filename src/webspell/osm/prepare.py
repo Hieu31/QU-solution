@@ -5,6 +5,7 @@ import hashlib
 import json
 import re
 import unicodedata
+from collections import Counter
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Iterable, Iterator, Mapping
@@ -215,3 +216,92 @@ def prepare_entities(entities: Iterable[OSMEntity], output: str | Path, config: 
 
 def prepare_osm(source: str | Path, output: str | Path, config: OSMPreparationConfig | None = None) -> dict[str, int]:
     return prepare_entities(iter_osm_entities(source), output, config)
+
+
+def resplit_prepared_queries(
+    source: str | Path,
+    output: str | Path,
+    config: OSMPreparationConfig | None = None,
+) -> dict[str, object]:
+    """Repartition prepared query pairs by normalized correct query.
+
+    This preserves the generated rows and their metadata while preventing an
+    alias shared by different OSM entities from crossing data splits.
+    """
+    config = config or OSMPreparationConfig()
+    config.validate()
+    source_root, output_root = Path(source), Path(output)
+    inputs = [source_root / split / 'noisy_pairs.csv' for split in ('train', 'validation', 'test')]
+    missing = [str(path) for path in inputs if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f'missing prepared query pairs: {missing}')
+    fieldnames = (
+        'noisy_query', 'correct_query', 'entity_id', 'group_id',
+        'term_role', 'noise_source', 'error_type', 'variant_id',
+    )
+    handles: dict[str, tuple[object, object, csv.DictWriter]] = {}
+    counts: Counter[str] = Counter()
+    error_types: Counter[str] = Counter()
+    groups: dict[str, set[str]] = {split: set() for split in ('train', 'validation', 'test')}
+    try:
+        for split in groups:
+            directory = output_root / split
+            directory.mkdir(parents=True, exist_ok=True)
+            corpus = (directory / 'corpus.txt').open('w', encoding='utf-8', newline='\n')
+            pair_file = (directory / 'noisy_pairs.csv').open('w', encoding='utf-8', newline='')
+            writer = csv.DictWriter(pair_file, fieldnames=fieldnames)
+            writer.writeheader()
+            handles[split] = (corpus, pair_file, writer)
+        for input_path in inputs:
+            with input_path.open(encoding='utf-8', newline='') as stream:
+                reader = csv.DictReader(stream)
+                if not set(fieldnames).issubset(reader.fieldnames or ()):
+                    raise ValueError(f'invalid noisy-pair schema: {input_path}')
+                for row in reader:
+                    correct = normalize_term(row['correct_query'])
+                    if not correct:
+                        continue
+                    split = split_for_entity(correct, config)
+                    corpus, _, writer = handles[split]
+                    writer.writerow({name: row.get(name, '') for name in fieldnames})
+                    counts[f'{split}_pairs'] += 1
+                    error_types[row['error_type']] += 1
+                    groups[split].add(correct)
+                    if row['noise_source'] == 'clean':
+                        corpus.write(correct + '\n')
+                        counts[f'{split}_corpus_rows'] += 1
+    finally:
+        for corpus, pair_file, _ in handles.values():
+            corpus.close()
+            pair_file.close()
+    overlaps = {
+        'train_validation': len(groups['train'] & groups['validation']),
+        'train_test': len(groups['train'] & groups['test']),
+        'validation_test': len(groups['validation'] & groups['test']),
+    }
+    if any(overlaps.values()):
+        raise AssertionError(f'query split leaked: {overlaps}')
+    manifest: dict[str, object] = {
+        'profile': 'webspell-prepared-query-group-split/v1',
+        'source': str(source_root.resolve()),
+        'config': {
+            'train_ratio': config.train_ratio,
+            'validation_ratio': config.validation_ratio,
+            'seed': config.seed,
+            'group_key': 'normalized correct_query',
+        },
+        'counts': {
+            split: {
+                'pairs': counts[f'{split}_pairs'],
+                'corpus_rows': counts[f'{split}_corpus_rows'],
+                'unique_query_groups': len(groups[split]),
+            }
+            for split in ('train', 'validation', 'test')
+        },
+        'overlaps': overlaps,
+        'error_type_counts': dict(sorted(error_types.items())),
+    }
+    (output_root / 'manifest.json').write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+    )
+    return manifest

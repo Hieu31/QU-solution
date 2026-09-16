@@ -15,6 +15,7 @@ from reparos.data import (
     PROFILE,
     noisy_query,
     prepare_improvement_regression_sets,
+    prepare_production_data,
     prepare_reparos_data,
 )
 from reparos.config import ModelConfig, TrainingConfig
@@ -23,6 +24,52 @@ from reparos.manifests import fingerprint_files, require_matching_checksum, sha2
 
 
 class ReparoSTests(unittest.TestCase):
+    def test_production_conversion_preserves_pairs_taxonomy_and_split(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'webspell'
+            header = (
+                'noisy_query', 'correct_query', 'entity_id', 'group_id',
+                'term_role', 'noise_source', 'error_type', 'variant_id',
+            )
+            rows = {
+                'train': [
+                    ('ha noi', 'ha noi', 'n1', 'ha noi', 'canonical', 'clean', 'clean', 'clean-0'),
+                    ('haf nooij', 'ha noi', 'n1', 'ha noi', 'canonical', 'synthetic_telex', 'telex_leak', '0'),
+                ],
+                'validation': [
+                    ('san bay', 'san bay', 'n2', 'san bay', 'canonical', 'clean', 'clean', 'clean-0'),
+                    ('sna bay', 'san bay', 'n2', 'san bay', 'canonical', 'synthetic_edit', 'keyboard_edit', '0'),
+                ],
+                'test': [
+                    ('cho ben', 'cho ben', 'n3', 'cho ben', 'canonical', 'clean', 'clean', 'clean-0'),
+                    ('chowj beens', 'cho ben', 'n3', 'cho ben', 'canonical', 'synthetic_telex', 'telex_leak', '0'),
+                ],
+            }
+            for split, values in rows.items():
+                folder = source / split
+                folder.mkdir(parents=True)
+                with (folder / 'noisy_pairs.csv').open('w', encoding='utf-8', newline='') as stream:
+                    writer = csv.writer(stream)
+                    writer.writerow(header)
+                    writer.writerows(values)
+            output = root / 'production'
+            manifest = prepare_production_data(source, output)
+            self.assertEqual(manifest['overlaps'], {
+                'train_validation': 0, 'train_test': 0, 'validation_test': 0,
+            })
+            self.assertEqual(manifest['counts']['train']['clean_fraction'], 0.5)
+            self.assertEqual(
+                (output / 'base' / 'train.src').read_text(encoding='utf-8').splitlines(),
+                ['ha noi', 'haf nooij'],
+            )
+            metadata = [
+                json.loads(line) for line in
+                (output / 'base' / 'train.meta.jsonl').read_text(encoding='utf-8').splitlines()
+            ]
+            self.assertEqual(metadata[1]['error_type'], 'telex_leak')
+            self.assertEqual(metadata[1]['group_id'], 'ha noi')
+
     def test_reparos_import_does_not_load_webspell(self) -> None:
         output = subprocess.check_output(
             [sys.executable, '-c', "import reparos,sys; print(any(x == 'webspell' or x.startswith('webspell.') for x in sys.modules))"],

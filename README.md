@@ -339,6 +339,36 @@ Optional private-data substitutes can be supplied with `--phonetic-pairs` and
 `--weak-feedback`. Missing lanes remain explicit in the manifest. Build the
 paper's 90/10 head-tail evaluation mixtures only from adjudicated human labels:
 
+For the Xanh SM production comparison, convert the exact leak-free WebSpell
+pairs instead of invoking the ReparoS synthetic generator:
+
+```powershell
+uv run reparos prepare-production `
+  --data data\osm\prepared-v4-leakfree `
+  --output data\reparos\reparos-production-v1
+```
+
+This conversion is one-to-one: it preserves train/validation/test membership,
+`error_type`, entity metadata, and the source clean/noisy ratio. The generated
+OpenNMT-compatible files live under `base/`; `production-manifest.json` records
+per-type counts, synthetic no-op rows, and split-overlap checks. Train this as a
+separate production model, not as the paper Base artifact:
+
+```powershell
+uv run reparos train-tokenizer `
+  --data data\reparos\reparos-production-v1 `
+  --output artifacts\reparos\tokenizer-production-v1
+
+uv run reparos build-opennmt-config `
+  --data data\reparos\reparos-production-v1 `
+  --tokenizer artifacts\reparos\tokenizer-production-v1 `
+  --output artifacts\reparos\opennmt-production-v1 `
+  --gpu-rank 0
+```
+
+The tokenizer/config commands are preparation only. Run vocabulary building and
+the long OpenNMT training job separately on the selected GPU host.
+
 ```powershell
 uv run reparos prepare-eval `
   --labeled-queries data\typed\xanh-sm-labeled-v1.csv `

@@ -6,7 +6,7 @@ import sys
 from pathlib import Path
 
 from webspell.demo import build_demo_model
-from webspell.osm import OSMPreparationConfig, OSMTrainingConfig, QueryAlignmentAdapter, prepare_osm, train_osm, write_token_level_pairs
+from webspell.osm import OSMPreparationConfig, OSMTrainingConfig, QueryAlignmentAdapter, prepare_osm, resplit_prepared_queries, train_osm, write_token_level_pairs
 from webspell.osm.noise import DEFAULT_NOISE_WEIGHTS
 from webspell.osm.alignment import TRAINING_ERROR_TYPE_WEIGHTS
 from webspell.osm.training import audit_score_scales, evaluate_osm_model
@@ -128,6 +128,17 @@ def _prepare_osm(args: argparse.Namespace) -> int:
     )
     counts = prepare_osm(args.input, args.output, config)
     print(json.dumps({"output": args.output, **counts}, indent=2, ensure_ascii=False))
+    return 0
+
+
+def _resplit_osm(args: argparse.Namespace) -> int:
+    config = OSMPreparationConfig(
+        train_ratio=args.train_ratio,
+        validation_ratio=args.validation_ratio,
+        seed=args.seed,
+    )
+    manifest = resplit_prepared_queries(args.data, args.output, config)
+    print(json.dumps(manifest, indent=2, ensure_ascii=False))
     return 0
 
 
@@ -323,6 +334,15 @@ def build_parser() -> argparse.ArgumentParser:
     osm.add_argument("--character-error-rate", type=float, default=0.02, help="deprecated compatibility option; taxonomy weights now control noise")
     osm.add_argument("--clean-variants", type=int, default=1, help="explicit clean-to-clean controls per term")
     osm.add_argument("--noise-weights", type=_parse_noise_weights, default=tuple(DEFAULT_NOISE_WEIGHTS.items()), help="comma-separated overrides such as missing_diacritics_full=25,keyboard_edit=15")
+    resplit_osm = subparsers.add_parser(
+        'resplit-osm-queries',
+        help='repartition prepared OSM corpus/pairs by normalized correct query',
+    )
+    resplit_osm.add_argument('--data', required=True)
+    resplit_osm.add_argument('--output', required=True)
+    resplit_osm.add_argument('--train-ratio', type=float, default=0.8)
+    resplit_osm.add_argument('--validation-ratio', type=float, default=0.1)
+    resplit_osm.add_argument('--seed', type=int, default=2026)
     train = subparsers.add_parser("train-osm", help="train the reproduced paper model from prepared OSM splits")
     train.add_argument("--data", required=True)
     train.add_argument("--output", required=True)
@@ -423,6 +443,8 @@ def main() -> int:
         return _prepare_scale(args)
     if args.command == "prepare-osm":
         return _prepare_osm(args)
+    if args.command == 'resplit-osm-queries':
+        return _resplit_osm(args)
     if args.command == "train-osm":
         return _train_osm(args)
     if args.command == 'evaluate-osm-token':

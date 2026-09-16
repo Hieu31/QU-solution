@@ -4,12 +4,116 @@ import csv
 import hashlib
 import json
 import random
+import re
 import unicodedata
 from collections import Counter, defaultdict
 from pathlib import Path
 
 
 PROFILE = 'reparos-2023-osm-substitute/v1'
+PRODUCTION_PROFILE = 'reparos-production-from-webspell/v1'
+_SOURCE_SPACE_RE = re.compile(r'\s+')
+_SOURCE_PUNCT_RE = re.compile(r'[^\w\s\-/]', re.UNICODE)
+
+
+def _source_query_group(text: str) -> str:
+    value = unicodedata.normalize('NFC', text).casefold().replace('_', ' ')
+    value = _SOURCE_PUNCT_RE.sub(' ', value)
+    return _SOURCE_SPACE_RE.sub(' ', value).strip(' -/')
+
+
+def prepare_production_data(prepared_data, output):
+    # Preserve every source pair, taxonomy label, and existing group split.
+    source_root, output_root = Path(prepared_data), Path(output)
+    splits = ('train', 'validation', 'test')
+    required = {
+        'noisy_query', 'correct_query', 'entity_id', 'group_id', 'term_role',
+        'noise_source', 'error_type', 'variant_id',
+    }
+    inputs = {split: source_root / split / 'noisy_pairs.csv' for split in splits}
+    missing = [str(path) for path in inputs.values() if not path.is_file()]
+    if missing:
+        raise FileNotFoundError(f'missing WebSpell pair files: {missing}')
+    manifest_path = output_root / 'production-manifest.json'
+    if manifest_path.exists():
+        raise FileExistsError(f'production output already exists: {manifest_path}')
+
+    counts = {}
+    groups = {split: set() for split in splits}
+    destination = output_root / 'base'
+    destination.mkdir(parents=True, exist_ok=True)
+    for split in splits:
+        error_types = Counter()
+        rows = clean = noisy = synthetic_noop = 0
+        with (
+            inputs[split].open(encoding='utf-8', newline='') as input_stream,
+            (destination / f'{split}.src').open('w', encoding='utf-8', newline='\n') as src_stream,
+            (destination / f'{split}.tgt').open('w', encoding='utf-8', newline='\n') as tgt_stream,
+            (destination / f'{split}.meta.jsonl').open('w', encoding='utf-8', newline='\n') as meta_stream,
+        ):
+            reader = csv.DictReader(input_stream)
+            absent = required.difference(reader.fieldnames or ())
+            if absent:
+                raise ValueError(f'{inputs[split]} missing columns: {sorted(absent)}')
+            for row_number, row in enumerate(reader, start=2):
+                source = row['noisy_query']
+                target = row['correct_query']
+                error_type = row['error_type'].strip()
+                group_id = row['group_id'].strip()
+                query_group = _source_query_group(target.strip())
+                if not source.strip() or not target.strip() or not error_type or not group_id or not query_group:
+                    raise ValueError(f'invalid row {row_number} in {inputs[split]}')
+                is_clean = source.strip() == target.strip()
+                src_stream.write(source + '\n')
+                tgt_stream.write(target + '\n')
+                metadata = {
+                    'error_class': error_type,
+                    'error_type': error_type,
+                    'group_id': group_id,
+                    'query_group': query_group,
+                    'entity_id': row['entity_id'],
+                    'term_role': row['term_role'],
+                    'noise_source': row['noise_source'],
+                    'variant_id': row['variant_id'],
+                    'source_split': split,
+                }
+                meta_stream.write(json.dumps(metadata, ensure_ascii=False) + '\n')
+                rows += 1
+                clean += int(is_clean)
+                noisy += int(not is_clean)
+                synthetic_noop += int(is_clean and error_type != 'clean')
+                error_types[error_type] += 1
+                groups[split].add(query_group)
+        counts[split] = {
+            'rows': rows,
+            'clean': clean,
+            'noisy': noisy,
+            'synthetic_noop': synthetic_noop,
+            'clean_fraction': clean / rows if rows else 0.0,
+            'unique_query_groups': len(groups[split]),
+            'error_type_counts': dict(sorted(error_types.items())),
+        }
+
+    overlaps = {
+        'train_validation': len(groups['train'] & groups['validation']),
+        'train_test': len(groups['train'] & groups['test']),
+        'validation_test': len(groups['validation'] & groups['test']),
+    }
+    if any(overlaps.values()):
+        raise ValueError(f'query-group leakage in source data: {overlaps}')
+    manifest = {
+        'profile': PRODUCTION_PROFILE,
+        'source': str(source_root.resolve()),
+        'conversion': 'one-to-one; no regeneration, sampling, or duplication',
+        'layout': 'base/{train,validation,test}.{src,tgt,meta.jsonl}',
+        'clean_policy': 'preserve source clean pairs and source ratio exactly',
+        'counts': counts,
+        'overlaps': overlaps,
+    }
+    manifest_path.write_text(
+        json.dumps(manifest, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
+    )
+    return manifest
 
 
 def normalized_query_group(text: str) -> str:

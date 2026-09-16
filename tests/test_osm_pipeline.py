@@ -8,7 +8,7 @@ from collections import Counter
 from pathlib import Path
 
 from webspell.osm.alignment import QueryAlignmentAdapter, iter_sampled_query_rows, write_token_level_pairs
-from webspell.osm.prepare import OSMEntity, OSMPreparationConfig, prepare_entities, synthetic_query_variants
+from webspell.osm.prepare import OSMEntity, OSMPreparationConfig, prepare_entities, resplit_prepared_queries, synthetic_query_variants
 from webspell.osm.noise import generate_noise
 from webspell.osm.training import OSMTrainingConfig, _balanced_training_subset, audit_score_scales, mine_web_error_triples, train_osm
 from webspell.confidence import TrainingRow
@@ -19,6 +19,46 @@ from webspell.scalable import LineCorpus, SQLiteCorpusStatistics, SQLiteSymSpell
 class OSMAlignmentTests(unittest.TestCase):
     def setUp(self) -> None:
         self.adapter = QueryAlignmentAdapter(order=3)
+
+    def test_resplit_prepared_queries_groups_shared_aliases(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / 'source'
+            header = (
+                'noisy_query', 'correct_query', 'entity_id', 'group_id',
+                'term_role', 'noise_source', 'error_type', 'variant_id',
+            )
+            for index, split in enumerate(('train', 'validation', 'test')):
+                folder = source / split
+                folder.mkdir(parents=True)
+                with (folder / 'noisy_pairs.csv').open(
+                    'w', encoding='utf-8', newline=''
+                ) as stream:
+                    writer = csv.writer(stream)
+                    writer.writerow(header)
+                    writer.writerow((
+                        'ho guom', 'hồ gươm', str(index), f'entity-{index}',
+                        'alias', 'synthetic', 'edit', '0',
+                    ))
+                    writer.writerow((
+                        'hồ gươm', 'hồ gươm', str(index), f'entity-{index}',
+                        'alias', 'clean', 'clean', 'clean-0',
+                    ))
+            output = root / 'output'
+            manifest = resplit_prepared_queries(source, output)
+            self.assertEqual(manifest['overlaps'], {
+                'train_validation': 0, 'train_test': 0, 'validation_test': 0,
+            })
+            locations = []
+            for split in ('train', 'validation', 'test'):
+                with (output / split / 'noisy_pairs.csv').open(
+                    encoding='utf-8', newline=''
+                ) as stream:
+                    rows = list(csv.DictReader(stream))
+                if rows:
+                    locations.append(split)
+                    self.assertEqual(len(rows), 6)
+            self.assertEqual(len(locations), 1)
 
     def test_align_equal_length_query_pairs(self) -> None:
         noisy = "san bay noi bai"
