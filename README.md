@@ -345,7 +345,99 @@ uv run reparos prepare-eval `
   --output data\typed\reparos-eval-v1
 ```
 
-See [the ReparoS reproduction audit](docs/reparos-2023-reproduction-audit.md).
+See [the ReparoS reproduction audit](docs/reparos-2023-reproduction-audit.md)
+and [the end-to-end technical specification](docs/reparos-2023-technical-specification.md).
+The approved delivery sequence is in the
+[ReparoS implementation plan](docs/reparos-2023-implementation-plan.md).
+
+Install only the Base training dependencies when ready to run the neural model:
+
+```powershell
+uv sync --extra reparos-train
+```
+
+Then train the tokenizer and a Base checkpoint (these commands are not run automatically):
+
+```powershell
+uv run reparos train-tokenizer `
+  --data data\reparos\prepared-v1 `
+  --output artifacts\reparos\tokenizer-v1
+
+uv run reparos train `
+  --stage base `
+  --data data\reparos\prepared-v1 `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --output artifacts\reparos\base-v1
+```
+
+For the official CTranslate2 path, use Python 3.11 because OpenNMT-py 3.5.1
+pins Torch 2.2.x. The `reparos-opennmt` extra also pins NumPy below 2 for that
+Torch build:
+
+```powershell
+uv sync --python 3.11 --extra reparos-opennmt
+
+uv run reparos build-opennmt-config `
+  --data data\reparos\prepared-v1 `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --output artifacts\reparos\opennmt-base-v1
+
+uv run reparos build-opennmt-vocab `
+  --config artifacts\reparos\opennmt-base-v1\opennmt-base.json
+
+uv run reparos train-opennmt `
+  --config artifacts\reparos\opennmt-base-v1\opennmt-base.json
+
+uv run reparos export-ctranslate2 `
+  --model artifacts\reparos\opennmt-base-v1\reparos_base_step_100000.pt `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --output artifacts\reparos\ctranslate2-base-v1 `
+  --trust-checkpoint
+
+uv run reparos check-ctranslate2-parity `
+  --checkpoint artifacts\reparos\opennmt-base-v1\reparos_base_step_100000.pt `
+  --model artifacts\reparos\ctranslate2-base-v1 `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --queries data\typed\reparos-parity.txt `
+  --output artifacts\reparos\ctranslate2-base-v1\parity.json
+```
+
+`train-opennmt` rebuilds vocabulary before training, so the separate vocabulary
+command is an optional fail-fast validation. The converter intentionally rejects
+the custom reference Transformer checkpoint: only a genuine OpenNMT-py checkpoint
+is accepted. OpenNMT checkpoints require pickle deserialization, so use
+`--trust-checkpoint` only for an artifact produced by this run or another trusted
+source. The smoke test validates both inference paths but does not demand exact
+outputs from a one-step random model, which has not learned EOS. Run parity on
+the trained checkpoint and promote the converted artifact only after reviewing
+the resulting top-1/top-k parity report.
+
+Building an OpenNMT config now also writes `resolved-architecture.json` and
+`decoding-config.json`. The first separates paper-published fields from inferred
+choices and local defaults; the second is consumed by both OpenNMT and
+CTranslate2 parity:
+
+```powershell
+uv run reparos check-ctranslate2-parity `
+  --checkpoint artifacts\reparos\opennmt-base-v1\reparos_base_step_100000.pt `
+  --model artifacts\reparos\ctranslate2-base-v1 `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --queries data\typed\reparos-parity.txt `
+  --decoding-config artifacts\reparos\opennmt-base-v1\decoding-config.json `
+  --output artifacts\reparos\ctranslate2-base-v1\parity.json
+```
+
+Generate the controlled FFN/local-default ablation plan without starting any
+training:
+
+```powershell
+uv run reparos plan-opennmt-ablation `
+  --data data\reparos\prepared-v1 `
+  --tokenizer artifacts\reparos\tokenizer-v1 `
+  --output artifacts\reparos\base-ablation-v1
+```
+
+See [the Base ablation protocol](docs/reparos-base-ablation.md).
 
 ## Tests
 

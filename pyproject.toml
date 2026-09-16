@@ -1,13 +1,17 @@
 [project]
 name = "qu-solution"
 version = "0.2.0"
-description = "A scalable, language-independent WebSpell training and inference pipeline"
+description = "Independent WebSpell 2009 and ReparoS 2023 reproduction pipelines"
 readme = "README.md"
 requires-python = ">=3.11,<3.15"
 dependencies = ["osmium>=4.0,<5"]
 
 [project.optional-dependencies]
 docs = ["pypdf>=6,<7"]
+reparos-train = ["torch>=2.2,<3", "sentencepiece>=0.2,<1"]
+reparos-serve = ["ctranslate2>=4,<5", "sentencepiece>=0.2,<1"]
+reparos = ["torch>=2.2,<3", "sentencepiece>=0.2,<1", "ctranslate2>=4,<5"]
+reparos-opennmt = ["OpenNMT-py>=3.5,<4", "torch>=2.2,<2.3", "numpy>=1.26,<2", "sentencepiece>=0.2,<1", "ctranslate2>=4,<5"]
 
 [project.scripts]
 webspell = "webspell.cli:main"
@@ -19,4 +23,4 @@ build-backend = "setuptools.build_meta"
 
 [tool.setuptools.packages.find]
 where = ["src"]
-include = ["webspell*"]
+include = ["webspell*", "reparos*"]
