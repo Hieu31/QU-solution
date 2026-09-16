@@ -9,12 +9,15 @@ class TokenizerConfig:
     model_type: str = 'unigram'
     character_coverage: float = 1.0
     normalization_rule: str = 'nmt_nfkc_cf'
+    input_sentence_size: int = 500000
 
     def validate(self) -> None:
         if self.vocab_size < 32:
             raise ValueError('vocab_size must be at least 32')
         if self.model_type not in {'unigram', 'bpe', 'char', 'word'}:
             raise ValueError('unsupported SentencePiece model type')
+        if self.input_sentence_size < 0:
+            raise ValueError('input_sentence_size must be non-negative')
 
 
 @dataclass(frozen=True)

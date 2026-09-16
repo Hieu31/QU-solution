@@ -47,6 +47,10 @@ def train_base(
     validation_rows = _parallel_lines(data_root / 'base' / 'validation.src', data_root / 'base' / 'validation.tgt')
     device_name = ('cuda' if torch.cuda.is_available() else 'cpu') if settings.device == 'auto' else settings.device
     device = torch.device(device_name)
+    device_desc = f"{torch.cuda.get_device_name(device)} ({device})" if device.type == 'cuda' else f"{device}"
+    print(f"[*] ReparoS Base Training starting on: {device_desc}")
+    print(f"[*] Train samples: {len(train_rows):,}, Val samples: {len(validation_rows):,}")
+    print(f"[*] Epochs: {settings.epochs}, Batch size: {settings.batch_size}")
     model = ReparoSTransformer(model_settings).to(device)
     optimizer = torch.optim.Adam(
         model.parameters(), lr=settings.learning_rate,
@@ -58,6 +62,7 @@ def train_base(
     history_path.write_text('', encoding='utf-8')
     step = 0
     best_loss = math.inf
+    total_batches = (len(train_rows) + settings.batch_size - 1) // settings.batch_size
 
     def batches(rows, epoch):
         order = list(range(len(rows)))
@@ -66,8 +71,10 @@ def train_base(
             yield [rows[index] for index in order[start:start + settings.batch_size]]
 
     def tensors(rows):
-        encoded_source = [tokenizer.encode(source)[:model_settings.max_length] for source, _ in rows]
-        encoded_target = [tokenizer.encode(target)[:model_settings.max_length] for _, target in rows]
+        sources = [source for source, _ in rows]
+        targets = [target for _, target in rows]
+        encoded_source = [ids[:model_settings.max_length] for ids in tokenizer.encode_batch(sources)]
+        encoded_target = [ids[:model_settings.max_length] for ids in tokenizer.encode_batch(targets)]
         def pad(values):
             width = max(map(len, values))
             return torch.tensor([value + [model_settings.pad_id] * (width - len(value)) for value in values], dtype=torch.long, device=device)
@@ -102,7 +109,9 @@ def train_base(
     for epoch in range(1, settings.epochs + 1):
         model.train()
         total_loss = total_tokens = 0
+        batch_idx = 0
         for batch in batches(train_rows, epoch):
+            batch_idx += 1
             source, target = tensors(batch)
             optimizer.zero_grad(set_to_none=True)
             logits = model(source, target[:, :-1])
@@ -111,22 +120,30 @@ def train_base(
             loss.backward()
             torch.nn.utils.clip_grad_norm_(model.parameters(), settings.gradient_clip)
             step += 1
+            rate = settings.learning_rate
             if settings.warmup_steps:
                 rate = settings.learning_rate * (model_settings.hidden_size ** -0.5) * min(step ** -0.5, step * settings.warmup_steps ** -1.5)
                 for group in optimizer.param_groups:
                     group['lr'] = rate
             optimizer.step()
             count = int(labels.ne(model_settings.pad_id).sum())
-            total_loss += float(loss.detach()) * count
+            batch_loss = float(loss.detach())
+            total_loss += batch_loss * count
             total_tokens += count
+            if batch_idx % 200 == 0 or batch_idx == total_batches:
+                cur_avg_loss = total_loss / max(total_tokens, 1)
+                print(f"  [Epoch {epoch}/{settings.epochs}] Batch {batch_idx:,}/{total_batches:,} (Step {step:,}) | Loss: {batch_loss:.4f} (Avg: {cur_avg_loss:.4f}) | LR: {rate:.6f}")
         val_loss = validation_loss()
-        record = {'epoch': epoch, 'step': step, 'train_loss': total_loss / max(total_tokens, 1), 'validation_loss': val_loss}
+        epoch_train_loss = total_loss / max(total_tokens, 1)
+        record = {'epoch': epoch, 'step': step, 'train_loss': epoch_train_loss, 'validation_loss': val_loss}
         with history_path.open('a', encoding='utf-8') as stream:
             stream.write(json.dumps(record) + '\n')
         save(output_root / 'last.ckpt', epoch, val_loss)
-        if val_loss < best_loss:
+        is_best = val_loss < best_loss
+        if is_best:
             best_loss = val_loss
             save(output_root / 'best.ckpt', epoch, val_loss)
+        print(f"--> Epoch {epoch}/{settings.epochs} completed | Train Loss: {epoch_train_loss:.4f} | Val Loss: {val_loss:.4f} {'[BEST]' if is_best else ''}")
 
     manifest = {
         'schema_version': 1, 'stage': 'base', 'device': device_name,

@@ -22,17 +22,22 @@ def train_sentencepiece(
     root = Path(output)
     root.mkdir(parents=True, exist_ok=True)
     prefix = root / 'tokenizer'
-    sentencepiece.SentencePieceTrainer.train(
-        input=','.join(str(path) for path in files),
-        model_prefix=str(prefix),
-        vocab_size=settings.vocab_size,
-        model_type=settings.model_type,
-        character_coverage=settings.character_coverage,
-        normalization_rule_name=settings.normalization_rule,
-        pad_id=0, bos_id=1, eos_id=2, unk_id=3,
-        hard_vocab_limit=False,
-        shuffle_input_sentence=False,
-    )
+    kwargs: dict[str, object] = {
+        'input': ','.join(str(path) for path in files),
+        'model_prefix': str(prefix),
+        'vocab_size': settings.vocab_size,
+        'model_type': settings.model_type,
+        'character_coverage': settings.character_coverage,
+        'normalization_rule_name': settings.normalization_rule,
+        'pad_id': 0, 'bos_id': 1, 'eos_id': 2, 'unk_id': 3,
+        'hard_vocab_limit': False,
+    }
+    if settings.input_sentence_size > 0:
+        kwargs['input_sentence_size'] = settings.input_sentence_size
+        kwargs['shuffle_input_sentence'] = True
+    else:
+        kwargs['shuffle_input_sentence'] = False
+    sentencepiece.SentencePieceTrainer.train(**kwargs)
     manifest = {
         'schema_version': 1,
         'config': settings.__dict__,
@@ -63,6 +68,12 @@ class SentencePieceTokenizer:
     def encode(self, text: str, add_bos: bool = True, add_eos: bool = True) -> list[int]:
         ids = list(self.processor.encode(text, out_type=int))
         return ([self.bos_id] if add_bos else []) + ids + ([self.eos_id] if add_eos else [])
+
+    def encode_batch(self, texts: list[str], add_bos: bool = True, add_eos: bool = True) -> list[list[int]]:
+        all_ids = self.processor.encode(texts, out_type=int)
+        bos = [self.bos_id] if add_bos else []
+        eos = [self.eos_id] if add_eos else []
+        return [bos + list(ids) + eos for ids in all_ids]
 
     def decode(self, ids: Iterable[int]) -> str:
         specials = {self.pad_id, self.bos_id, self.eos_id}
