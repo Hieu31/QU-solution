@@ -1,0 +1,22 @@
+[project]
+name = "qu-solution"
+version = "0.2.0"
+description = "A scalable, language-independent WebSpell training and inference pipeline"
+readme = "README.md"
+requires-python = ">=3.11,<3.15"
+dependencies = ["osmium>=4.0,<5"]
+
+[project.optional-dependencies]
+docs = ["pypdf>=6,<7"]
+
+[project.scripts]
+webspell = "webspell.cli:main"
+reparos = "reparos.cli:main"
+
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+include = ["webspell*"]

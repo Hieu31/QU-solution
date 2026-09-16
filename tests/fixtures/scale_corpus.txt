@@ -1,0 +1,5 @@
+Tôi đang học xử lý ngôn ngữ tự nhiên.
+Mô hình ngôn ngữ sử dụng ngữ cảnh.
+Hệ thống có thể sửa lỗi chính tả.
+Tôi đang học xử lý ngôn ngữ tự nhiên.
+Mô hình ngôn ngữ sử dụng ngữ cảnh.

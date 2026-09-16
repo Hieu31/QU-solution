@@ -1,0 +1,20 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Downloaded/generated OSM experiment data
+data/osm/*.pbf
+data/osm/*.pbf.*
+data/osm/prepared/
+data
+
+# Artifacts
+artifacts
+benchmarks
