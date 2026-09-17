@@ -52,15 +52,17 @@ def test_bare_acronym_is_curated_not_automatic() -> None:
 
 
 def test_stage3_acronym_rows_are_only_curated() -> None:
-    rows = _curated_acronym_rows(200)
-    assert len(rows) == 200
+    rows = _curated_acronym_rows(400)
+    assert len(rows) == 400
     assert all(row.operations[0].startswith((
         "curated_acronym:", "curated_query:", "curated_university:"
     )) for row in rows)
     mappings = {(row.source, row.target) for row in rows}
     assert ("ltk", "lý thường kiệt") in mappings
     assert ("thpt clhp", "trung học phổ thông chuyên lê hồng phong") in mappings
+    assert ("thptclhp", "trung học phổ thông chuyên lê hồng phong") in mappings
     assert ("bv bm", "bệnh viện bạch mai") in mappings
+    assert ("đltk q1", "đường lý thường kiệt quận 1") in mappings
     assert ("hust", "đại học bách khoa hà nội") in mappings
     assert ("đh hcmute", "đại học sư phạm kỹ thuật thành phố hồ chí minh") in mappings
     assert ("dh ptit", "học viện công nghệ bưu chính viễn thông") in mappings

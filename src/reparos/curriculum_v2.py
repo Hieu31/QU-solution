@@ -394,17 +394,21 @@ def _curated_acronym_rows(required: int) -> list[Row]:
     templates = (
         ("{short}", "{target}"),
         ("đ {short}", "đường {target}"),
+        ("đ{short}", "đường {target}"),
         ("đường {short}", "đường {target}"),
         ("{short} q1", "{target} quận 1"),
         ("đ {short} q1", "đường {target} quận 1"),
+        ("đ{short} q1", "đường {target} quận 1"),
     )
     rows: list[Row] = []
     base: list[Row] = []
     for source, expected in CURATED_QUERY_EXPANSIONS.items():
-        base.append(Row(
-            source, expected, _source_query_group(expected), "curated-query-expansion",
-            "acronym", "acronym", (f"curated_query:{source}",),
-        ))
+        for variant in dict.fromkeys((source, source.replace(" ", ""))):
+            base.append(Row(
+                variant, expected, _source_query_group(expected),
+                "curated-query-expansion", "acronym", "acronym",
+                (f"curated_query:{source}",),
+            ))
     for short, expected in CURATED_UNIVERSITY_ALIASES.items():
         for source in (
             short, f"đh {short}", f"dh {short}", f"trường {short}",
