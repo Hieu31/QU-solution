@@ -20,6 +20,11 @@ if not REPO_ROOT.exists():
 else:
     subprocess.run(['git', '-C', str(REPO_ROOT), 'pull', '--ff-only'], check=True)
 os.chdir(REPO_ROOT)
+# The project is installed in .venv for CLI subprocesses, while notebook cells
+# execute in the Kaggle/Colab kernel. Expose the src layout to that kernel too.
+SRC_ROOT = str(REPO_ROOT / 'src')
+if SRC_ROOT not in sys.path:
+    sys.path.insert(0, SRC_ROOT)
 subprocess.run([sys.executable, '-m', 'pip', 'install', '-q', 'uv'], check=True)
 subprocess.run(['uv', 'sync', '--python', '3.11', '--extra', 'reparos-opennmt'], check=True)
 
@@ -64,28 +69,25 @@ print('Evaluation:', EVALUATION_ROOT)
 '''
 
 
-PILOT_TRAIN = r'''from reparos.curriculum_notebook import train_sequence
+PILOT_TRAIN = r'''from reparos.curriculum_notebook import train_and_select_pilot_sequence
 
 assert RUN_PILOT, 'Set RUN_PILOT=True to run the three pilot stages.'
-PILOT_ROOT = RUN_ROOT / 'pilot'
-PILOT_FINAL, PILOT_CHECKPOINTS = train_sequence(
-    profile_root=CURRICULUM_ROOT / 'pilot', output_root=PILOT_ROOT,
+PILOT_FINAL, PILOT_CHECKPOINTS, PILOT_GATES = train_and_select_pilot_sequence(
+    profile_root=CURRICULUM_ROOT / 'pilot', output_root=RUN_ROOT,
     base_config=BASE_TEMPLATE, initial_checkpoint=BASE_CHECKPOINT,
     additional_steps=PILOT_STEPS, python_executable=VENV_PY,
     valid_steps=500, checkpoint_steps=500,
+    tokenizer=TOKENIZER_MODEL, decoding_config=DECODING_CONFIG,
+    evaluation_root=EVALUATION_ROOT, reparos_cli=REPAROS,
+    benchmark_cli=BENCHMARK, device='cuda', compute_type='float16',
 )
 print('Pilot final checkpoint:', PILOT_FINAL)
+print('Selected pilot checkpoints:', PILOT_CHECKPOINTS)
 '''
 
 
-PILOT_GATE = r'''from reparos.curriculum_notebook import run_pilot_gates
-
-PILOT_GATES = run_pilot_gates(
-    PILOT_CHECKPOINTS, tokenizer=TOKENIZER_MODEL,
-    decoding_config=DECODING_CONFIG, evaluation_root=EVALUATION_ROOT,
-    output_root=RUN_ROOT / 'pilot-evaluation', reparos_cli=REPAROS,
-    benchmark_cli=BENCHMARK,
-)
+PILOT_GATE = r'''# Training already evaluated every retained checkpoint and selected
+# the newest passing checkpoint before starting the next stage.
 print(json.dumps(PILOT_GATES, ensure_ascii=False, indent=2))
 ALL_PILOT_GATES_PASSED = bool(PILOT_GATES['passed'])
 assert ALL_PILOT_GATES_PASSED, 'Pilot failed. Inspect pilot-gates.json; full training remains locked.'
@@ -108,18 +110,39 @@ print('Full final checkpoint:', FULL_FINAL)
 '''
 
 
-FINAL_EVAL = r'''from reparos.curriculum_notebook import evaluate_checkpoint
+FINAL_EVAL = r'''import shutil
+from reparos.curriculum_notebook import evaluate_checkpoint
 
 FINAL_REPORTS = evaluate_checkpoint(
     checkpoint=FULL_FINAL, tokenizer=TOKENIZER_MODEL,
     decoding_config=DECODING_CONFIG, evaluation_root=EVALUATION_ROOT,
     output_root=RUN_ROOT / 'full-evaluation', reparos_cli=REPAROS,
-    benchmark_cli=BENCHMARK,
+    benchmark_cli=BENCHMARK, device='cuda', compute_type='float16',
 )
-(RUN_ROOT / 'full-evaluation-summary.json').write_text(
+summary_path = RUN_ROOT / 'full-evaluation-summary.json'
+summary_path.write_text(
     json.dumps(FINAL_REPORTS, ensure_ascii=False, indent=2) + '\n', encoding='utf-8'
 )
-print('Saved final reports:', RUN_ROOT / 'full-evaluation-summary.json')
+
+# Build one self-contained downloadable production artifact.
+export_root = RUN_ROOT / 'final-artifact'
+if export_root.exists():
+    shutil.rmtree(export_root)
+export_root.mkdir(parents=True)
+shutil.copy2(FULL_FINAL, export_root / FULL_FINAL.name)
+shutil.copy2(TOKENIZER_MODEL, export_root / 'tokenizer.model')
+shutil.copy2(DECODING_CONFIG, export_root / 'decoding-config.json')
+shutil.copy2(FULL_FINAL.parent / 'opennmt-stage.json', export_root / 'opennmt-stage.json')
+shutil.copy2(summary_path, export_root / summary_path.name)
+pilot_gates_path = RUN_ROOT / 'pilot-evaluation/pilot-gates.json'
+if pilot_gates_path.is_file():
+    shutil.copy2(pilot_gates_path, export_root / 'pilot-gates.json')
+shutil.copytree(RUN_ROOT / 'full-evaluation/ctranslate2', export_root / 'ctranslate2')
+zip_base = Path('/kaggle/working/reparos-curriculum-v2-final') if Path('/kaggle/working').exists() else RUN_ROOT / 'reparos-curriculum-v2-final'
+zip_path = Path(shutil.make_archive(str(zip_base), 'zip', export_root))
+print('OpenNMT checkpoint:', FULL_FINAL)
+print('CTranslate2 model:', export_root / 'ctranslate2')
+print('DOWNLOAD THIS FILE:', zip_path, f'({zip_path.stat().st_size / 1024**2:.1f} MiB)')
 '''
 
 
@@ -148,7 +171,7 @@ if LOCAL_CURRICULUM_PARENT.exists():
     shutil.rmtree(LOCAL_CURRICULUM_PARENT)
 LOCAL_CURRICULUM_PARENT.mkdir(parents=True)
 subprocess.run(['unzip', '-q', str(CURRICULUM_ZIP), '-d', str(LOCAL_CURRICULUM_PARENT)], check=True)
-candidates = [p.parent.parent for p in LOCAL_CURRICULUM_PARENT.rglob('pilot/stage1-primitives/train.src')]
+candidates = [p.parents[2] for p in LOCAL_CURRICULUM_PARENT.rglob('pilot/stage1-primitives/train.src')]
 assert len(candidates) == 1, candidates
 CURRICULUM_ROOT = candidates[0]
 print('Curriculum root:', CURRICULUM_ROOT)
@@ -161,15 +184,15 @@ REPO_URL = 'https://github.com/Hieu31/QU-solution.git'
 REPO_ROOT = Path('/kaggle/working/QU-solution')
 RUN_ROOT = Path('/kaggle/working/reparos/curriculum-v2-run')
 
-curriculum_candidates = [p.parent.parent for p in Path('/kaggle/input').rglob('pilot/stage1-primitives/train.src')]
-assert curriculum_candidates, 'Attach the curriculum-v2 dataset to this notebook.'
-CURRICULUM_ROOT = curriculum_candidates[0]
-base_configs = list(Path('/kaggle/input').rglob('opennmt-base.json'))
-assert base_configs, 'Attach the trusted Base OpenNMT artifact dataset.'
-BASE_ARTIFACT_DIR = base_configs[0].parent
-tokenizers = list(Path('/kaggle/input').rglob('tokenizer.model'))
-assert tokenizers, 'Attach tokenizer-production-v1.'
-TOKENIZER_MODEL = tokenizers[0]
+CURRICULUM_ROOT = Path('/kaggle/input/datasets/vanhieu1125/reparos1/curriculum-v2')
+BASE_ARTIFACT_DIR = Path('/kaggle/input/datasets/vanhieu1125/opennmt/opennmt-production-kaggle-t4-v1')
+TOKENIZER_MODEL = Path('/kaggle/input/datasets/vanhieu1125/tokenizer/tokenizer-production-v1/tokenizer.model')
+
+assert (CURRICULUM_ROOT / 'pilot/stage1-primitives/train.src').is_file(), CURRICULUM_ROOT
+assert (CURRICULUM_ROOT / 'full/stage1-primitives/train.src').is_file(), CURRICULUM_ROOT
+assert (BASE_ARTIFACT_DIR / 'opennmt-base.json').is_file(), BASE_ARTIFACT_DIR
+assert (BASE_ARTIFACT_DIR / 'decoding-config.json').is_file(), BASE_ARTIFACT_DIR
+assert TOKENIZER_MODEL.is_file(), TOKENIZER_MODEL
 
 RUN_PILOT = True
 ALLOW_FULL_TRAIN = False  # Change only after the three pilot gates pass.
@@ -185,8 +208,8 @@ FULL_STEPS = {'stage1-primitives': 12000, 'stage2-composition': 15000, 'stage3-l
         md("## 2. Runtime setup"), code(COMMON_SETUP),
         md("## 3. Locate curriculum and trusted Base artifacts"), code(data),
         md("## 4. Validate all data and lock Base vocabulary/checkpoint"), code(VALIDATE),
-        md("## 5. Train Pilot Stage 1 → Stage 2 → Stage 3\n\nEach stage resumes from the preceding checkpoint. No full data is touched here."), code(PILOT_TRAIN),
-        md("## 6. Evaluate every pilot checkpoint and enforce gates\n\nThis runs the frozen 88-case user set, 4K composition set, and 10K stratified set for each stage."), code(PILOT_GATE),
+        md("## 5. Train and select Pilot Stage 1 → Stage 2 → Stage 3\n\nAfter each stage, evaluate all three retained checkpoints, select the newest checkpoint that passes its gate, and only then start the next stage. No full data is touched here."), code(PILOT_TRAIN),
+        md("## 6. Review selected pilot checkpoints and enforce gates\n\nThe prior cell evaluated the frozen 88-case user set, 4K composition set, and 10K stratified set for every retained checkpoint. This cell prints all candidate results and keeps Full locked unless all stages passed."), code(PILOT_GATE),
         md("## 7. FULL TRAIN — manually locked\n\nOnly after the prior cell prints that all gates passed, set `ALLOW_FULL_TRAIN=True` in the configuration cell and run this cell. Full starts again from Base, not Pilot."), code(FULL_TRAIN),
         md("## 8. Final full evaluation and CTranslate2 export"), code(FINAL_EVAL),
     ]

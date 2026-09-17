@@ -101,8 +101,8 @@ PROFILES = {
 
 STAGE_WEIGHTS: dict[str, dict[str, int]] = {
     "stage1-primitives": {
-        "clean": 30, "missing_diacritics": 20, "boundary": 15,
-        "keyboard": 15, "telex": 15, "vni": 5,
+        "clean": 30, "missing_diacritics": 30, "boundary": 15,
+        "keyboard": 10, "telex": 10, "vni": 5,
     },
     "stage2-composition": {
         "clean": 20, "primitive_replay": 20, "two_operation": 40,

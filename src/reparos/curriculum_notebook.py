@@ -8,6 +8,7 @@ from typing import Mapping
 
 from reparos.curriculum_training import (
     build_stage_config,
+    checkpoint_step,
     evaluate_pilot_gate,
     latest_checkpoint,
 )
@@ -75,7 +76,8 @@ def evaluate_checkpoint(
     *, checkpoint: str | Path, tokenizer: str | Path,
     decoding_config: str | Path, evaluation_root: str | Path,
     output_root: str | Path, reparos_cli: str | Path,
-    benchmark_cli: str | Path,
+    benchmark_cli: str | Path, device: str = "cpu",
+    compute_type: str = "float32",
 ) -> dict[str, Mapping[str, object]]:
     output = Path(output_root)
     output.mkdir(parents=True, exist_ok=True)
@@ -98,7 +100,7 @@ def evaluate_checkpoint(
         subprocess.run([
             str(benchmark_cli), "run-ctranslate2", "--gold", str(gold),
             "--model", str(ct2), "--decoding-config", str(decoding_config),
-            "--device", "cpu", "--compute-type", "float32", "--output", str(prediction),
+            "--device", device, "--compute-type", compute_type, "--output", str(prediction),
         ], check=True)
         subprocess.run([
             str(benchmark_cli), "score", "--gold", str(gold),
@@ -112,7 +114,8 @@ def run_pilot_gates(
     checkpoints: Mapping[str, Path], *, tokenizer: str | Path,
     decoding_config: str | Path, evaluation_root: str | Path,
     output_root: str | Path, reparos_cli: str | Path,
-    benchmark_cli: str | Path,
+    benchmark_cli: str | Path, device: str = "cpu",
+    compute_type: str = "float32",
 ) -> dict[str, object]:
     results = {}
     for stage in STAGES:
@@ -120,7 +123,7 @@ def run_pilot_gates(
             checkpoint=checkpoints[stage], tokenizer=tokenizer,
             decoding_config=decoding_config, evaluation_root=evaluation_root,
             output_root=Path(output_root) / stage, reparos_cli=reparos_cli,
-            benchmark_cli=benchmark_cli,
+            benchmark_cli=benchmark_cli, device=device, compute_type=compute_type,
         )
         results[stage] = evaluate_pilot_gate(stage, reports)
     payload = {"passed": all(item["passed"] for item in results.values()), "stages": results}
@@ -129,3 +132,62 @@ def run_pilot_gates(
     path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return payload
 
+
+def train_and_select_pilot_sequence(
+    *, profile_root: str | Path, output_root: str | Path,
+    base_config: str | Path, initial_checkpoint: str | Path,
+    additional_steps: Mapping[str, int], python_executable: str | Path,
+    tokenizer: str | Path, decoding_config: str | Path,
+    evaluation_root: str | Path, reparos_cli: str | Path,
+    benchmark_cli: str | Path, valid_steps: int, checkpoint_steps: int,
+    device: str = "cpu", compute_type: str = "float32",
+) -> tuple[Path, dict[str, Path], dict[str, object]]:
+    """Train each pilot stage from the newest passing retained checkpoint."""
+    root = Path(output_root)
+    current = Path(initial_checkpoint)
+    selected: dict[str, Path] = {}
+    stage_results: dict[str, object] = {}
+    for stage in STAGES:
+        stage_output = root / "pilot" / stage
+        if list(stage_output.glob("reparos_step_*.pt")):
+            raise FileExistsError(f"stage output already has checkpoints: {stage_output}")
+        config = build_stage_config(
+            base_config, Path(profile_root) / stage, stage_output, current,
+            additional_steps[stage], valid_steps=valid_steps,
+            save_checkpoint_steps=checkpoint_steps,
+        )
+        subprocess.run([str(python_executable), "-m", "onmt.bin.train", "-config", str(config)], check=True)
+        candidates = sorted(stage_output.glob("reparos_step_*.pt"), key=checkpoint_step)
+        if not candidates:
+            raise FileNotFoundError(f"no checkpoint in {stage_output}")
+        candidate_results = []
+        passing: list[Path] = []
+        for checkpoint in candidates:
+            step = checkpoint_step(checkpoint)
+            reports = evaluate_checkpoint(
+                checkpoint=checkpoint, tokenizer=tokenizer,
+                decoding_config=decoding_config, evaluation_root=evaluation_root,
+                output_root=root / "pilot-evaluation" / stage / f"step-{step}",
+                reparos_cli=reparos_cli, benchmark_cli=benchmark_cli,
+                device=device, compute_type=compute_type,
+            )
+            gate = evaluate_pilot_gate(stage, reports)
+            candidate_results.append({"checkpoint": str(checkpoint), "step": step, **gate})
+            if gate["passed"]:
+                passing.append(checkpoint)
+        chosen = max(passing, key=checkpoint_step) if passing else None
+        stage_results[stage] = {
+            "stage": stage, "passed": chosen is not None,
+            "selected_checkpoint": str(chosen) if chosen else None,
+            "candidates": candidate_results,
+        }
+        payload = {"passed": len(selected) + (chosen is not None) == len(STAGES), "stages": stage_results}
+        gates_path = root / "pilot-evaluation" / "pilot-gates.json"
+        gates_path.parent.mkdir(parents=True, exist_ok=True)
+        gates_path.write_text(json.dumps(payload, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
+        if chosen is None:
+            raise RuntimeError(f"{stage} failed: no retained checkpoint passed its pilot gate; inspect {gates_path}")
+        selected[stage] = chosen
+        current = chosen
+        print(stage, "selected checkpoint:", chosen)
+    return current, selected, {"passed": True, "stages": stage_results}
