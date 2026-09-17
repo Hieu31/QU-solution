@@ -12,6 +12,7 @@ reparos-train = ["torch>=2.2,<3", "sentencepiece>=0.2,<1"]
 reparos-serve = ["ctranslate2>=4,<5", "sentencepiece>=0.2,<1"]
 reparos = ["torch>=2.2,<3", "sentencepiece>=0.2,<1", "ctranslate2>=4,<5"]
 reparos-opennmt = ["OpenNMT-py>=3.5,<4", "torch>=2.2,<2.3", "numpy>=1.26,<2", "sentencepiece>=0.2,<1", "ctranslate2>=4,<5"]
+demo = ["streamlit>=1.40,<2", "streamlit-keyup>=0.2.0,<1"]
 
 [project.scripts]
 webspell = "webspell.cli:main"

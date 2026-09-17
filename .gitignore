@@ -19,3 +19,6 @@ data
 artifacts
 benchmarks
 benchmark
+
+# Local demo feedback (may contain user-entered queries)
+logs/

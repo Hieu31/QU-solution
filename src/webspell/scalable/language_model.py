@@ -15,7 +15,7 @@ class SQLiteNGramModel:
     def __init__(self, path: str | Path, direction: int) -> None:
         self.path = Path(path)
         self.direction = direction
-        self.connection = sqlite3.connect(self.path)
+        self.connection = sqlite3.connect(self.path, check_same_thread=False)
         self.term_ids = {
             str(term): int(term_id)
             for term, term_id in self.connection.execute('SELECT term, id FROM terms')

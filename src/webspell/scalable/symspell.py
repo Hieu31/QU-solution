@@ -31,7 +31,10 @@ class SQLiteSymSpellIndex:
 
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
-        self.connection = sqlite3.connect(self.path)
+        # Read-only model bundles are cached across Streamlit rerun threads.
+        # Calls are serialized by the serving layer, so allow the connection
+        # to follow the cached model between those threads.
+        self.connection = sqlite3.connect(self.path, check_same_thread=False)
         metadata = SQLiteCorpusStatistics(self.path).metadata()
         if not metadata.get("symspell_complete"):
             raise ValueError("SymSpell index is missing or incomplete")

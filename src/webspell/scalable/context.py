@@ -10,7 +10,7 @@ from webspell.mining.triples import WordContext
 class SQLiteContextStatistics:
     def __init__(self, path: str | Path) -> None:
         self.path = Path(path)
-        self.connection = sqlite3.connect(self.path)
+        self.connection = sqlite3.connect(self.path, check_same_thread=False)
 
     @lru_cache(maxsize=200_000)
     def term_id(self, term: str) -> int | None:
