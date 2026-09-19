@@ -22,3 +22,5 @@ benchmark
 
 # Local demo feedback (may contain user-entered queries)
 logs/
+.codex/
+deliverables/

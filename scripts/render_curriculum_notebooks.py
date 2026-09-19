@@ -95,7 +95,9 @@ print('ALL THREE PILOT STAGES PASSED. Full training may now be explicitly unlock
 '''
 
 
-FULL_TRAIN = r'''assert ALL_PILOT_GATES_PASSED, 'Full training is locked: pilot gates did not pass.'
+FULL_TRAIN = r'''from reparos.curriculum_notebook import train_sequence
+
+assert ALL_PILOT_GATES_PASSED, 'Full training is locked: pilot gates did not pass.'
 assert ALLOW_FULL_TRAIN, 'Review pilot-gates.json, then explicitly set ALLOW_FULL_TRAIN=True in the config cell.'
 
 # Full is a clean branch from Base, not a continuation of the pilot checkpoint.
@@ -195,7 +197,7 @@ assert (BASE_ARTIFACT_DIR / 'decoding-config.json').is_file(), BASE_ARTIFACT_DIR
 assert TOKENIZER_MODEL.is_file(), TOKENIZER_MODEL
 
 RUN_PILOT = True
-ALLOW_FULL_TRAIN = False  # Change only after the three pilot gates pass.
+ALLOW_FULL_TRAIN = True  # Pilot gates passed; full training explicitly unlocked.
 PILOT_STEPS = {'stage1-primitives': 3000, 'stage2-composition': 3000, 'stage3-lexical': 3000}
 FULL_STEPS = {'stage1-primitives': 12000, 'stage2-composition': 15000, 'stage3-lexical': 8000}
 '''

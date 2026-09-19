@@ -25,10 +25,10 @@ from webspell.pipeline.model import WebSpellModel  # noqa: E402
 
 DEFAULTS = {
     "webspell": ROOT / "artifacts/osm-model-production-v4-leakfree",
-    "checkpoint": ROOT / "artifacts/opennmt-production-kaggle-t4-v1/reparos_base_step_25000.pt",
-    "tokenizer": ROOT / "artifacts/tokenizer-production-v1/tokenizer.model",
-    "decoding": ROOT / "artifacts/opennmt-production-kaggle-t4-v1/decoding-config.json",
-    "ctranslate2": ROOT / "artifacts/opennmt-production-kaggle-t4-v1-ctranslate2-float32",
+    "checkpoint": ROOT / "artifacts/reparos-curriculum-v2-final/reparos_step_60000.pt",
+    "tokenizer": ROOT / "artifacts/reparos-curriculum-v2-final/tokenizer.model",
+    "decoding": ROOT / "artifacts/reparos-curriculum-v2-final/decoding-config.json",
+    "ctranslate2": ROOT / "artifacts/reparos-curriculum-v2-final/ctranslate2",
 }
 WEBSPELL_LOCK = threading.RLock()
 OPENNMT_LOCK = threading.RLock()

@@ -15,8 +15,8 @@ class DecodingConfig:
     max_decoding_length: int = 100
     length_penalty: float = 1.0
     # OpenNMT-py `-length_penalty avg -alpha 1` and CTranslate2 use different
-    # numeric conventions. CT2=0 reproduces OpenNMT average-score ranking for
-    # converted OpenNMT-py checkpoints.
+    # score normalization conventions. No CT2 value guarantees identical
+    # ranking: validate this value with a parity and quality sweep after export.
     ctranslate2_length_penalty: float = 0.0
     coverage_penalty: float = 0.0
     patience: float = 1.0
