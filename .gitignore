@@ -24,3 +24,5 @@ benchmark
 logs/
 .codex/
 deliverables/
+kaggle-bundle/
+offline/
