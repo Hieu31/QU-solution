@@ -58,8 +58,8 @@ class SentencePieceTokenizer:
         self.bos_id = int(self.processor.bos_id())
         self.eos_id = int(self.processor.eos_id())
         self.unk_id = int(self.processor.unk_id())
-        if (self.pad_id, self.bos_id, self.eos_id, self.unk_id) != (0, 1, 2, 3):
-            raise ValueError('unexpected SentencePiece special token ids')
+        if (self.pad_id, self.bos_id, self.eos_id, self.unk_id) not in {(0, 1, 2, 3), (0, 2, 3, 1)}:
+            raise ValueError(f'unexpected SentencePiece special token ids: pad={self.pad_id}, bos={self.bos_id}, eos={self.eos_id}, unk={self.unk_id}')
 
     @property
     def vocab_size(self) -> int:

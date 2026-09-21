@@ -89,6 +89,7 @@ def create_run_config(
         "bucket_size": bucket_size,
         "num_workers": num_workers,
         "normalization": "tokens",
+        "report_every": 2000,
         "train_steps": train_steps,
         "valid_steps": valid_steps,
         "save_checkpoint_steps": save_checkpoint_steps,

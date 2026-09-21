@@ -11,6 +11,11 @@ from typing import Dict, List, Tuple
 # Force UTF-8 stdout
 sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
 
+# Ensure src/ is in sys.path
+REPO_ROOT = Path(__file__).resolve().parents[1]
+if (REPO_ROOT / "src").is_dir() and str(REPO_ROOT / "src") not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / "src"))
+
 import sentencepiece as spm
 
 from reparos.data_registry import HELDOUT_BRANDS
@@ -60,24 +65,23 @@ DIAGNOSTIC_QUERIES = [
 
 class BaseV3Evaluator:
     def __init__(self, model_dir: Path, tokenizer_path: Path, device: str = "cpu"):
+        import ctranslate2
         self.model_dir = model_dir
         self.tokenizer_path = tokenizer_path
         self.sp = spm.SentencePieceProcessor()
         self.sp.load(str(tokenizer_path))
-        self.predictor = CTranslate2Predictor(model_dir, device=device)
+        self.translator = ctranslate2.Translator(str(model_dir), device=device)
 
     def predict(self, text: str) -> str:
-        res = self.predictor.predict(text, beam_size=10, num_hypotheses=1)
-        if res and len(res) > 0:
-            return normalize(res[0])
-        return normalize(text)
+        res = self.predict_batch([text])
+        return res[0] if res else normalize(text)
 
     def predict_batch(self, texts: List[str], batch_size: int = 128) -> List[str]:
         results = []
         for i in range(0, len(texts), batch_size):
             chunk = texts[i : i + batch_size]
             tokenized_chunk = [self.sp.encode_as_pieces(t) for t in chunk]
-            step_results = self.predictor.translator.translate_batch(
+            step_results = self.translator.translate_batch(
                 tokenized_chunk,
                 beam_size=10,
                 num_hypotheses=1,

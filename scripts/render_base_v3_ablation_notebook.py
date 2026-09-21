@@ -30,7 +30,7 @@ def main():
     cells = []
 
     # Cell 1: Intro Markdown
-    cells.append(md("""# ReparoS Base V3 — 3-Way Empirical Lane 4 Ablation Study (20,000 Steps)
+    cells.append(md("""# ReparoS Base V3 — 3-Way Empirical Ablation Study (Kaggle T4)
 
 This notebook runs the official **Base V3 Pre-training from Scratch Ablation Suite** across 3 controlled variants to determine the optimal real-query adaptation mixture:
 
@@ -38,34 +38,18 @@ This notebook runs the official **Base V3 Pre-training from Scratch Ablation Sui
 - **Run B (Lane 4 DAE-Only):** 40% Lane 1 + 25% Lane 2 + 25% Lane 3 + 10% Lane 4 DAE
 - **Run C (Lane 4 DAE + Identity):** 40% Lane 1 + 25% Lane 2 + 25% Lane 3 + 7% DAE + 3% Identity
 
-### Key Architectural & Data Upgrades in Base V3:
-1. **Tokenizer V3 (12,000 Vocab, Byte-Fallback, Custom Symbols):** Solves the Base V2 `<unk>` brand truncation bottleneck (`Biti's`, `Pizza 4P's`, `McDonald's`, `J&T Express` are 100% tokenizable with 0.0000% UNK).
-2. **Confidence-Gated Lane 4 (3-Tier Filter):** Resolves the label contradiction hazards of raw `zero_click.csv`.
-3. **Strict Disjoint Brand Split:** 50 Seen vs 50 Held-out Brands with mathematical 0-leakage verification.
-4. **Unified Frozen Evaluation Suite (~3,100 pairs):** Frozen across Plasticity, Retention, Protection (Seen & Held-out), and User-Centric benchmarks.
+### Setup Requirement:
+- **Accelerator:** GPU T4 x1 (or T4 x2)
+- **Internet:** ON (pip install OpenNMT-py in ~20 seconds)
+- **Input Dataset:** Upload & attach `reparos-base-v3-data.zip` (~21 MB)
 """))
 
-    # Cell 2: Hyperparameters & Configuration
-    cells.append(code("""import os
-import sys
-from pathlib import Path
-
-# --- Training Configurations ---
-TRAIN_STEPS = 20_000
-VALID_STEPS = 1_000
-SAVE_CHECKPOINT_STEPS = 2_000
-KEEP_CHECKPOINTS = 3
-BATCH_SIZE_TOKENS = 32_768  # 32k for T4 / 65k for RTX 6000
-BUCKET_SIZE = 65_536
-NUM_WORKERS = 4
-MODEL_DTYPE = "fp16"
-SEED = 2026
-
-RUNS = ["dataset_run_a", "dataset_run_b", "dataset_run_c"]
-print(f"Configured {len(RUNS)} ablation runs with {TRAIN_STEPS:,} steps each.")
+    # Cell 2: Install Dependencies
+    cells.append(code("""# Install required dependencies (~20 seconds, lock numpy<2 for OpenNMT stability)
+!pip install -q "numpy<2" "OpenNMT-py>=3.5,<4" sentencepiece ctranslate2
 """))
 
-    # Cell 3: GPU & Environment Setup
+    # Cell 3: GPU & Environment Check
     cells.append(code("""!nvidia-smi
 
 import torch
@@ -75,32 +59,54 @@ if torch.cuda.is_available():
     print(f"GPU Device: {torch.cuda.get_device_name(0)}")
 """))
 
-    # Cell 4: Locate Repository Root & Data
-    cells.append(code("""# Locate workspace root
-import os
+    # Cell 4: Locate Dataset & Setup Working Directory
+    cells.append(code("""import os
+import shutil
 import sys
 from pathlib import Path
 
-# When running in Kaggle environment:
-if Path("/kaggle/working/QU-solution").is_dir():
-    REPO_ROOT = Path("/kaggle/working/QU-solution")
-elif Path("../input/qu-solution").is_dir():
-    REPO_ROOT = Path("../input/qu-solution")
+KAGGLE_INPUT = Path('/kaggle/input')
+WORK_DIR = Path('/kaggle/working/QU-solution')
+
+# Find the dataset path containing data/tokenizer_v3/tokenizer.model
+candidates = []
+for p in KAGGLE_INPUT.rglob('tokenizer.model'):
+    if 'tokenizer_v3' in str(p):
+        root = p.parent.parent.parent
+        candidates.append(root)
+
+candidates = sorted(set(candidates))
+if candidates:
+    DATASET_ROOT = candidates[0]
 else:
-    REPO_ROOT = Path(os.getcwd())
+    DATASET_ROOT = Path(os.getcwd())
 
-os.chdir(REPO_ROOT)
-sys.path.insert(0, str(REPO_ROOT / "src"))
-print(f"Current Working Directory: {os.getcwd()}")
+print(f"Located DATASET_ROOT: {DATASET_ROOT}")
 
-TOKENIZER_MODEL = REPO_ROOT / "data/tokenizer_v3/tokenizer.model"
-EVAL_DIR = REPO_ROOT / "data/base_v3_eval"
-ABLATION_DIR = REPO_ROOT / "data/base_v3_ablation"
+# Prepare working directory
+if WORK_DIR.exists():
+    shutil.rmtree(WORK_DIR)
+WORK_DIR.mkdir(parents=True, exist_ok=True)
+
+# Copy code and data to working directory for writable execution
+if (DATASET_ROOT / 'src').is_dir():
+    shutil.copytree(DATASET_ROOT / 'src', WORK_DIR / 'src')
+if (DATASET_ROOT / 'scripts').is_dir():
+    shutil.copytree(DATASET_ROOT / 'scripts', WORK_DIR / 'scripts')
+if (DATASET_ROOT / 'data').is_dir():
+    shutil.copytree(DATASET_ROOT / 'data', WORK_DIR / 'data')
+
+os.chdir(WORK_DIR)
+sys.path.insert(0, str(WORK_DIR / 'src'))
+
+TOKENIZER_MODEL = WORK_DIR / "data/tokenizer_v3/tokenizer.model"
+EVAL_DIR = WORK_DIR / "data/base_v3_eval"
+ABLATION_DIR = WORK_DIR / "data/base_v3_ablation"
 
 assert TOKENIZER_MODEL.is_file(), f"Tokenizer not found at {TOKENIZER_MODEL}"
 assert EVAL_DIR.is_dir(), f"Eval directory not found at {EVAL_DIR}"
 assert ABLATION_DIR.is_dir(), f"Ablation directory not found at {ABLATION_DIR}"
-print("All inputs located and verified!")
+print("All directories verified and ready in working space!")
 """))
 
     # Cell 5: Verify Tokenizer V3 Zero-UNK Guarantee
@@ -135,27 +141,44 @@ assert all_clean, "Tokenizer V3 failed special-symbol verification!"
 print("\\n100% PASS: Tokenizer V3 has mathematical 0 UNK on all target brands!")
 """))
 
-    # Cell 6: Generate OpenNMT Configs & Build Vocabularies
+    # Cell 6: Hyperparameters & Vocab Generation
     cells.append(code("""import subprocess
+import json
 
-# Generate configs
+TRAIN_STEPS = 20_000
+VALID_STEPS = 1_000
+SAVE_CHECKPOINT_STEPS = 2_000
+KEEP_CHECKPOINTS = 3
+BATCH_SIZE_TOKENS = 32_768  # 32k for T4 GPU
+BUCKET_SIZE = 65_536
+NUM_WORKERS = 4
+MODEL_DTYPE = "fp16"
+SEED = 2026
+
+RUNS = ["dataset_run_a", "dataset_run_b", "dataset_run_c"]
+
+# Generate OpenNMT configs
 !python scripts/prepare_base_v3_ablation_configs.py --batch-size $BATCH_SIZE_TOKENS --bucket-size $BUCKET_SIZE --num-workers $NUM_WORKERS
 
-# Build OpenNMT Vocabularies (-n_sample -1)
+# Build OpenNMT Vocabularies (-n_sample -1) without log clutter
 for run_name in RUNS:
     config_file = ABLATION_DIR / run_name / "opennmt_config.json"
     vocab_src = ABLATION_DIR / run_name / "vocab.src"
     if not vocab_src.is_file() or vocab_src.stat().st_size == 0:
-        print(f"\\nBuilding OpenNMT full vocabulary for {run_name}...")
-        subprocess.run([
+        print(f"Building OpenNMT vocabulary for {run_name}...", end=" ", flush=True)
+        res = subprocess.run([
             sys.executable, "-m", "onmt.bin.build_vocab",
             "-config", str(config_file),
             "-n_sample", "-1"
-        ], check=True)
+        ], capture_output=True, text=True)
+        if res.returncode != 0:
+            print("FAILED!\\n", res.stderr)
+            raise subprocess.CalledProcessError(res.returncode, res.args)
+        print("Done!")
     print(f"Vocab ready for {run_name}: {vocab_src}")
 """))
 
-    # Cell 7: Execute Ablation Pre-training from Scratch
+    # Cell 7: Execute Ablation Pre-training from Scratch (Clean progress output)
     cells.append(code("""import time
 
 checkpoints = {}
@@ -166,16 +189,33 @@ for run_name in RUNS:
     ckpt_dir = Path("checkpoints") / f"base_v3_ablation_{run_name}"
     ckpt_dir.mkdir(parents=True, exist_ok=True)
     
+    log_path = ckpt_dir / "train.log"
+    print(f"Training in progress... (Chi tiết log đầy đủ được lưu vào {log_path})")
+    print("Tiến độ các mốc chính:")
+    
     t0 = time.time()
-    subprocess.run([
-        sys.executable, "-m", "onmt.bin.train",
-        "-config", str(config_file)
-    ], check=True)
+    with open(log_path, "w", encoding="utf-8") as f_log:
+        proc = subprocess.Popen(
+            [sys.executable, "-m", "onmt.bin.train", "-config", str(config_file)],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+            text=True,
+            bufsize=1,
+        )
+        for line in proc.stdout:
+            f_log.write(line)
+            clean = line.strip()
+            # Chỉ in các mốc 2,000 steps và khi lưu checkpoint
+            if any(f"Step {s}/" in clean for s in range(2000, 22000, 2000)) or "Saving checkpoint" in clean or "Validation score" in clean:
+                print(f"  {clean}")
+        proc.wait()
+        if proc.returncode != 0:
+            print(f"\\nTraining {run_name} failed! Check {log_path} for details.")
+            raise subprocess.CalledProcessError(proc.returncode, proc.args)
     
     elapsed = (time.time() - t0) / 60
     print(f"Pre-training {run_name} finished in {elapsed:.1f} minutes.")
     
-    # Locate final checkpoint
     ckpts = sorted(ckpt_dir.glob(f"reparos_base_v3_{run_name}_step_*.pt"))
     assert len(ckpts) > 0, f"No checkpoint saved for {run_name}!"
     checkpoints[run_name] = str(ckpts[-1])
@@ -183,7 +223,8 @@ for run_name in RUNS:
 """))
 
     # Cell 8: Run Unified Frozen Evaluation & Comparison
-    cells.append(code("""import subprocess
+    cells.append(code("""eval_env = dict(os.environ)
+eval_env["PYTHONPATH"] = f"{WORK_DIR}/src:{eval_env.get('PYTHONPATH', '')}"
 
 eval_cmd = [
     sys.executable, "scripts/evaluate_base_v3_ablation.py",
@@ -196,32 +237,31 @@ eval_cmd = [
 ]
 
 print("Running Unified Frozen Evaluation across Run A, Run B, Run C...")
-subprocess.run(eval_cmd, check=True)
+subprocess.run(eval_cmd, check=True, env=eval_env)
 """))
 
     # Cell 9: Display Final Markdown Summary & Best Run Selection
-    cells.append(code("""import json
-
-with open("data/ablation_evaluation_report.json", "r", encoding="utf-8") as f:
+    cells.append(code("""with open("data/ablation_evaluation_report.json", "r", encoding="utf-8") as f:
     results = json.load(f)
 
-print("\\n" + "="*80)
+print("\\n" + "="*85)
 print("                   FINAL EMPIRICAL DECISION MATRIX                           ")
-print("="*80)
+print("="*85)
+header = f"{'Run Name':<18} | {'Plasticity':<12} | {'Retention':<12} | {'Seen Brands':<12} | {'Heldout Brand':<14} | {'User':<10}"
+print(header)
+print("-" * len(header))
 
-# Display comparative summary
 for run, data in results.items():
     p = data["metrics"]["plasticity"]["exact_match"]
     r = data["metrics"]["retention"]["exact_match"]
     ps = data["metrics"]["protection_seen"]["exact_match"]
     ph = data["metrics"]["protection_heldout"]["exact_match"]
-    uc = data["metrics"]["user_centric"]["exact_match"]
     br = data["metrics"]["protection_heldout"].get("brand_retention", 100.0)
-    avg_score = (p + r + ps + ph + uc) / 5.0
-    print(f"{run:<16} | Plasticity: {p:.1f}% | Retention: {r:.1f}% | Seen: {ps:.1f}% | Heldout: {ph:.1f}% (Brand: {br:.1f}%) | User: {uc:.1f}% | Overall: {avg_score:.2f}%")
+    uc = data["metrics"]["user_centric"]["exact_match"]
+    print(f"{run:<18} | {p:>10.2f}% | {r:>10.2f}% | {ps:>10.2f}% | {ph:>6.2f}% ({br:.0f}%) | {uc:>8.2f}%")
 
-print("="*80)
-print("\\nCheck qualitative diagnostics in the stdout log above to verify zero error preservation on zero-click queries.")
+print("="*85)
+print("\\nReview qualitative diagnostic outputs above to verify zero label contradiction & zero error preservation.")
 """))
 
     notebook = {
@@ -250,7 +290,7 @@ print("\\nCheck qualitative diagnostics in the stdout log above to verify zero e
 
     with open(notebook_path, "w", encoding="utf-8") as f:
         json.dump(notebook, f, indent=1, ensure_ascii=False)
-    print(f"Generated self-contained Kaggle Notebook at {notebook_path}")
+    print(f"Updated Kaggle Notebook at {notebook_path}")
 
 
 if __name__ == "__main__":
