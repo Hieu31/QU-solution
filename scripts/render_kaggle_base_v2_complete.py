@@ -142,6 +142,9 @@ config.update({
     'num_workers': NUM_WORKERS,
     'keep_checkpoint': 10,
     'seed': SEED,
+    'transformer_ff': 2048,
+    'enc_layers': 2,
+    'dec_layers': 1,
     'data': {
         'noisy': {
             'path_src': str(BASE_V2_ROOT / 'train.noisy.src'),
@@ -200,17 +203,18 @@ print('Config:', CONFIG_PATH)
     ('base_v2_32', BASE_V2_CHECKPOINT, TOKENIZER_MODEL),
 ):
 """
-    assert old_loop in evaluation
-    evaluation = evaluation.replace(old_loop, new_loop)
-    evaluation = evaluation.replace("tokenizer=TOKENIZER_MODEL,", "tokenizer=tokenizer,")
-    notebook["cells"][12] = code(evaluation)
+    if old_loop in evaluation:
+        evaluation = evaluation.replace(old_loop, new_loop)
+        evaluation = evaluation.replace("tokenizer=TOKENIZER_MODEL,", "tokenizer=tokenizer,")
+        notebook["cells"][12] = code(evaluation)
 
     package = "".join(notebook["cells"][18]["source"])
-    package = package.replace(
-        "shutil.copy2(TOKENIZER_MODEL, EXPORT_ROOT / 'tokenizer.model')",
-        "shutil.copy2(TOKENIZER_MODEL, EXPORT_ROOT / 'tokenizer.model')\nshutil.copy2(TOKENIZER_ROOT / 'tokenizer.vocab', EXPORT_ROOT / 'tokenizer.vocab')\nshutil.copy2(TOKENIZER_ROOT / 'tokenizer-manifest.json', EXPORT_ROOT / 'tokenizer-manifest.json')\nshutil.copy2(RUN_ROOT / 'vocab.src', EXPORT_ROOT / 'vocab.src')\nshutil.copy2(RUN_ROOT / 'vocab.tgt', EXPORT_ROOT / 'vocab.tgt')",
-    )
-    notebook["cells"][18] = code(package)
+    if "vocab.src" not in package:
+        package = package.replace(
+            "shutil.copy2(TOKENIZER_MODEL, EXPORT_ROOT / 'tokenizer.model')",
+            "shutil.copy2(TOKENIZER_MODEL, EXPORT_ROOT / 'tokenizer.model')\nshutil.copy2(TOKENIZER_ROOT / 'tokenizer.vocab', EXPORT_ROOT / 'tokenizer.vocab')\nshutil.copy2(TOKENIZER_ROOT / 'tokenizer-manifest.json', EXPORT_ROOT / 'tokenizer-manifest.json')\nshutil.copy2(RUN_ROOT / 'vocab.src', EXPORT_ROOT / 'vocab.src')\nshutil.copy2(RUN_ROOT / 'vocab.tgt', EXPORT_ROOT / 'vocab.tgt')",
+        )
+        notebook["cells"][18] = code(package)
 
     for index, cell in enumerate(notebook["cells"]):
         if cell["cell_type"] == "code":

@@ -146,6 +146,9 @@ config.update({
     'num_workers': NUM_WORKERS,
     'keep_checkpoint': 5,
     'seed': SEED,
+    'transformer_ff': 2048,
+    'enc_layers': 2,
+    'dec_layers': 1,
     'data': {
         'noisy': {
             'path_src': str(BASE_V2_ROOT / 'train.noisy.src'),
