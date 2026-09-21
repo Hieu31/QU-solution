@@ -48,8 +48,9 @@ ADDITIONAL_STEPS = 3000
 SAVE_STEPS = 250
 VALID_STEPS = 250
 KEEP_CHECKPOINTS = 15
-BATCH_SIZE_TOKENS = 32768
-NUM_WORKERS = 4
+BATCH_SIZE_TOKENS = 4096
+BUCKET_SIZE = 16384
+NUM_WORKERS = 2
 SEED = 2026
 """),
     md("""## 2. Environment Setup
@@ -75,6 +76,11 @@ VENV_PY = REPO_ROOT / '.venv/bin/python'
 REPAROS = REPO_ROOT / '.venv/bin/reparos'
 BENCHMARK = REPO_ROOT / '.venv/bin/benchmark-three'
 assert all(path.is_file() for path in (VENV_PY, REPAROS, BENCHMARK)), 'Virtual environment binaries missing'
+
+# Add .venv site-packages to Jupyter kernel sys.path
+site_packages = list((REPO_ROOT / '.venv/lib').glob('python*/site-packages'))
+if site_packages and str(site_packages[0]) not in sys.path:
+    sys.path.insert(0, str(site_packages[0]))
 
 subprocess.run(['nvidia-smi'], check=True)
 subprocess.run(['git', 'rev-parse', 'HEAD'], check=True)
@@ -104,28 +110,39 @@ VOCAB_TGT = search_file('vocab.tgt', 'Target Vocabulary')
 DECODING_CONFIG = search_file('decoding-config.json', 'Decoding Config')
 
 # 3. Locate Interleaved Continual Dataset Root (contains train/ and eval/)
-CONTINUAL_DATA_ROOT = search_file(
-    'address_abbreviation.jsonl',
-    'Continual Dataset (plasticity)',
-    lambda p: (p.parents[1] / 'eval').is_dir() or (p.parents[2] / 'eval').is_dir()
-).parents[1]
-if CONTINUAL_DATA_ROOT.name == 'plasticity':
-    CONTINUAL_DATA_ROOT = CONTINUAL_DATA_ROOT.parent.parent
+def find_continual_data_root():
+    for p in KAGGLE_INPUT.rglob('*'):
+        if p.is_dir() and (p / 'train').is_dir() and (p / 'eval').is_dir():
+            return p
+    for p in KAGGLE_INPUT.rglob('leak_audit_report.json'):
+        if (p.parent / 'train').is_dir() and (p.parent / 'eval').is_dir():
+            return p.parent
+    raise FileNotFoundError(f'Cannot locate continual dataset root (containing train/ and eval/) under {KAGGLE_INPUT}')
 
-# 4. Standard evaluation benchmarks (from git repo or kaggle input)
-BENCHMARK_ROOT = REPO_ROOT / 'benchmark'
-USER_GOLD = BENCHMARK_ROOT / 'reparos-user-centric-v2/gold.jsonl'
-COMPOSITION_GOLD = BENCHMARK_ROOT / 'reparos-compositional-4k/gold.jsonl'
-DIAGNOSTIC_GOLD = BENCHMARK_ROOT / 'reparos-diagnostic-10k/gold.jsonl'
-for p in (USER_GOLD, COMPOSITION_GOLD, DIAGNOSTIC_GOLD):
-    assert p.is_file(), f'Missing benchmark gold file: {p}'
+CONTINUAL_DATA_ROOT = find_continual_data_root()
+
+# 4. Standard evaluation benchmarks (optional: diagnostic-10k, composition-4k, user-centric-v2)
+bench_match = list(KAGGLE_INPUT.rglob('user-centric-v2.jsonl'))
+if not bench_match:
+    bench_match = list(KAGGLE_INPUT.rglob('diagnostic-10k.jsonl'))
+
+if bench_match:
+    BENCHMARK_ROOT = bench_match[0].parent
+    BENCHMARK_AVAILABLE = (
+        (BENCHMARK_ROOT / 'user-centric-v2.jsonl').is_file() and
+        (BENCHMARK_ROOT / 'composition-4k.jsonl').is_file() and
+        (BENCHMARK_ROOT / 'diagnostic-10k.jsonl').is_file()
+    )
+else:
+    BENCHMARK_ROOT = None
+    BENCHMARK_AVAILABLE = False
 
 print('--- Resolved Paths ---')
 print('Base Checkpoint   :', BASE_CHECKPOINT)
 print('Base Config       :', BASE_CONFIG)
 print('Tokenizer Model   :', TOKENIZER_MODEL)
 print('Continual Dataset :', CONTINUAL_DATA_ROOT)
-print('Benchmarks Gold   :', BENCHMARK_ROOT)
+print('Benchmarks Gold   :', BENCHMARK_ROOT if BENCHMARK_AVAILABLE else 'Not found (Cell 7 benchmark comparison will be skipped)')
 """),
     md("""## 4. Prepare Training Corpora and OpenNMT Configuration
 
@@ -152,6 +169,9 @@ CONFIG_PATH = build_finetune_config(
     save_checkpoint_steps=SAVE_STEPS,
     valid_steps=VALID_STEPS,
     keep_checkpoint=KEEP_CHECKPOINTS,
+    batch_size=BATCH_SIZE_TOKENS,
+    bucket_size=BUCKET_SIZE,
+    num_workers=NUM_WORKERS,
 )
 
 print('Generated OpenNMT Continual Config at:', CONFIG_PATH)
@@ -189,101 +209,25 @@ assert saved_checkpoints, 'No checkpoints found after training'
    - **Gate 2 (Plasticity)**: Plasticity gain $\\ge +25.0\\%$.
 4. Classifies outcomes (Case A, B, C, D) and selects the **Pareto Optimal Checkpoint**.
 """),
-    code("""from reparos.continual_finetune import (
-    evaluate_continual_splits,
-    evaluate_3tier_gating,
-    checkpoint_step,
-)
-from reparos.serving.ctranslate2 import CTranslate2Predictor
+    code("""GATING_REPORT = RUN_ROOT / 'gating_results.json'
 
-EVAL_DIR = CONTINUAL_DATA_ROOT / 'eval'
+subprocess.run([
+    str(VENV_PY), str(REPO_ROOT / 'scripts/evaluate_continual_candidates.py'),
+    '--run-root', str(RUN_ROOT),
+    '--continual-data-root', str(CONTINUAL_DATA_ROOT),
+    '--base-checkpoint', str(BASE_CHECKPOINT),
+    '--tokenizer-model', str(TOKENIZER_MODEL),
+    '--reparos-cli', str(REPAROS),
+    '--device', 'cuda',
+    '--compute-type', 'float16',
+    '--batch-size', '128',
+    '--output', str(GATING_REPORT),
+], check=True)
 
-# Step A: Evaluate Base V2 baseline
-BASE_CT2_DIR = RUN_ROOT / 'ct2_base_v2'
-if not BASE_CT2_DIR.exists():
-    subprocess.run([
-        str(REPAROS), 'export-ctranslate2',
-        '--model', str(BASE_CHECKPOINT),
-        '--tokenizer', str(TOKENIZER_MODEL),
-        '--output', str(BASE_CT2_DIR),
-        '--compute-type', 'float16',
-        '--trust-checkpoint',
-    ], check=True)
-
-print('Evaluating Base V2 baseline...')
-base_predictor = CTranslate2Predictor(BASE_CT2_DIR, device='cuda', compute_type='float16')
-baseline_metrics = evaluate_continual_splits(base_predictor, EVAL_DIR, batch_size=128)
-del base_predictor
-
-print('=== Base V2 Baseline Metrics ===')
-print(f'Plasticity Acc : {baseline_metrics[\"plasticity\"][\"_overall\"][\"exact_accuracy\"]*100:.2f}%')
-print(f'Retention Acc  : {baseline_metrics[\"retention\"][\"_overall\"][\"exact_accuracy\"]*100:.2f}%')
-print(f'FCR Seen       : {baseline_metrics[\"protection_seen\"][\"_overall\"][\"fcr\"]*100:.2f}%')
-print(f'FCR Heldout    : {baseline_metrics[\"protection_heldout\"][\"_overall\"][\"fcr\"]*100:.2f}%')
-
-# Step B: Evaluate all candidate checkpoints
-candidate_results = []
-for ckpt in saved_checkpoints:
-    step = checkpoint_step(ckpt)
-    ct2_dir = RUN_ROOT / f'ct2_step_{step}'
-    if ct2_dir.exists():
-        shutil.rmtree(ct2_dir)
-
-    subprocess.run([
-        str(REPAROS), 'export-ctranslate2',
-        '--model', str(ckpt),
-        '--tokenizer', str(TOKENIZER_MODEL),
-        '--output', str(ct2_dir),
-        '--compute-type', 'float16',
-        '--trust-checkpoint',
-    ], check=True)
-
-    predictor = CTranslate2Predictor(ct2_dir, device='cuda', compute_type='float16')
-    split_metrics = evaluate_continual_splits(predictor, EVAL_DIR, batch_size=128)
-    del predictor
-
-    gating = evaluate_3tier_gating(baseline_metrics, split_metrics)
-    record = {
-        'step': step,
-        'checkpoint': str(ckpt),
-        'ct2_dir': str(ct2_dir),
-        'status': gating['status'],
-        'outcome': gating['outcome'],
-        'plasticity_acc': split_metrics['plasticity']['_overall']['exact_accuracy'],
-        'plasticity_gain': gating['gate_2_plasticity']['gain'],
-        'plasticity_noop': split_metrics['plasticity']['_overall']['noop_rate'],
-        'retention_acc': split_metrics['retention']['_overall']['exact_accuracy'],
-        'retention_deg': gating['gate_1_retention']['degradation'],
-        'fcr_seen': split_metrics['protection_seen']['_overall']['fcr'],
-        'fcr_heldout': split_metrics['protection_heldout']['_overall']['fcr'],
-        'gating_details': gating,
-        'split_metrics': split_metrics,
-    }
-    candidate_results.append(record)
-
-# Step C: Select Pareto Optimal Checkpoint
-passing_candidates = [c for c in candidate_results if c['status'] == 'PASSED']
-if passing_candidates:
-    # Pareto criterion: lowest total FCR, then highest plasticity gain
-    winning_candidate = min(
-        passing_candidates,
-        key=lambda c: (c['fcr_seen'] + c['fcr_heldout'], -c['plasticity_gain'])
-    )
-else:
-    print('WARNING: No checkpoint passed all 3 tiers. Selecting candidate with minimum Gate violations.')
-    winning_candidate = min(
-        candidate_results,
-        key=lambda c: (c['fcr_heldout'], c['retention_deg'], -c['plasticity_gain'])
-    )
-
-print('=' * 60)
-print('SELECTED WINNING CHECKPOINT: Step', winning_candidate['step'])
-print('Outcome Status :', winning_candidate['outcome'])
-print(f'Plasticity Acc : {winning_candidate[\"plasticity_acc\"]*100:.2f}% (gain: {winning_candidate[\"plasticity_gain\"]*100:+.2f}%)')
-print(f'Retention Acc  : {winning_candidate[\"retention_acc\"]*100:.2f}% (drop: {winning_candidate[\"retention_deg\"]*100:+.2f}%)')
-print(f'FCR Seen       : {winning_candidate[\"fcr_seen\"]*100:.2f}%')
-print(f'FCR Held-out   : {winning_candidate[\"fcr_heldout\"]*100:.2f}%')
-print('=' * 60)
+report_data = json.loads(GATING_REPORT.read_text(encoding='utf-8'))
+winning_candidate = report_data['winning_candidate']
+candidate_results = report_data['candidate_results']
+baseline_metrics = report_data['baseline_metrics']
 
 # Display tabular comparison
 import pandas as pd
@@ -304,36 +248,41 @@ Evaluates the winning Continual Fine-Tuned model against Base V2 on the three fr
 - `reparos-compositional-4k`
 - `reparos-user-centric-v2`
 """),
-    code("""from reparos.curriculum_notebook import evaluate_checkpoint
+    code("""if not BENCHMARK_AVAILABLE or BENCHMARK_ROOT is None:
+    print('Standard benchmark files (user-centric, composition, diagnostic) not found in /kaggle/input.')
+    print('Skipping Cell 7 benchmark comparison. Continual Fine-Tuning & 3-Tier Gating are already complete!')
+    bench_reports = {}
+else:
+    from reparos.curriculum_notebook import evaluate_checkpoint
 
-WINNING_CHECKPOINT = Path(winning_candidate['checkpoint'])
+    WINNING_CHECKPOINT = Path(winning_candidate['checkpoint'])
 
-bench_reports = {}
-for system_name, ckpt in (('base_v2', BASE_CHECKPOINT), ('continual_v1', WINNING_CHECKPOINT)):
-    bench_reports[system_name] = evaluate_checkpoint(
-        checkpoint=ckpt,
-        tokenizer=TOKENIZER_MODEL,
-        decoding_config=DECODING_CONFIG,
-        evaluation_root=BENCHMARK_ROOT,
-        output_root=RUN_ROOT / 'benchmarks' / system_name,
-        reparos_cli=REPAROS,
-        benchmark_cli=BENCHMARK,
-        device='cuda',
-        compute_type='float16',
-    )
+    bench_reports = {}
+    for system_name, ckpt in (('base_v2', BASE_CHECKPOINT), ('continual_v1', WINNING_CHECKPOINT)):
+        bench_reports[system_name] = evaluate_checkpoint(
+            checkpoint=ckpt,
+            tokenizer=TOKENIZER_MODEL,
+            decoding_config=DECODING_CONFIG,
+            evaluation_root=BENCHMARK_ROOT,
+            output_root=RUN_ROOT / 'benchmarks' / system_name,
+            reparos_cli=REPAROS,
+            benchmark_cli=BENCHMARK,
+            device='cuda',
+            compute_type='float16',
+        )
 
-print(json.dumps(bench_reports, indent=2, ensure_ascii=False))
+    print(json.dumps(bench_reports, indent=2, ensure_ascii=False))
 
-# Show Diagnostic & Compositional Comparison
-for bname in ('user', 'composition', 'diagnostic'):
-    b_base = bench_reports['base_v2'][bname].get('overall', {})
-    b_cont = bench_reports['continual_v1'][bname].get('overall', {})
-    print(f'--- Benchmark: {bname} ---')
-    for metric_name in ('query_exact_accuracy', 'clean_preservation_rate', 'clean_false_correction_rate'):
-        v1 = b_base.get(metric_name)
-        v2 = b_cont.get(metric_name)
-        if v1 is not None and v2 is not None:
-            print(f'  {metric_name:28s}: Base V2={v1*100:5.2f}% | Continual={v2*100:5.2f}% | Delta={(v2-v1)*100:+5.2f}%')
+    # Show Diagnostic & Compositional Comparison
+    for bname in ('user', 'composition', 'diagnostic'):
+        b_base = bench_reports.get('base_v2', {}).get(bname, {}).get('overall', {})
+        b_cont = bench_reports.get('continual_v1', {}).get(bname, {}).get('overall', {})
+        print(f'--- Benchmark: {bname} ---')
+        for metric_name in ('query_exact_accuracy', 'clean_preservation_rate', 'clean_false_correction_rate'):
+            v1 = b_base.get(metric_name)
+            v2 = b_cont.get(metric_name)
+            if v1 is not None and v2 is not None:
+                print(f'  {metric_name:28s}: Base V2={v1*100:5.2f}% | Continual={v2*100:5.2f}% | Delta={(v2-v1)*100:+5.2f}%')
 """),
     md("""## 8. Export Final Continual Fine-Tuned Artifacts
 

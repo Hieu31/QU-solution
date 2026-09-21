@@ -7,8 +7,23 @@ import zipfile
 from pathlib import Path
 
 
-def package_dataset(dataset_dir: Path, output_zip: Path) -> Path:
-    """Zips interleaved-continual-v1 dataset."""
+def add_benchmarks(zf: zipfile.ZipFile, repo_root: Path) -> None:
+    """Adds the three frozen standard benchmarks into evaluation/ in the archive."""
+    bench_sources = {
+        "user-centric-v2.jsonl": repo_root / "benchmark/reparos-user-centric-v2/gold.jsonl",
+        "composition-4k.jsonl": repo_root / "benchmark/reparos-compositional-4k/gold.jsonl",
+        "diagnostic-10k.jsonl": repo_root / "benchmark/reparos-diagnostic-10k/gold.jsonl",
+    }
+    for dest_name, src_path in bench_sources.items():
+        if src_path.is_file():
+            zf.write(src_path, f"evaluation/{dest_name}")
+            print(f"  + Added benchmark: evaluation/{dest_name}")
+        else:
+            print(f"  ! Warning: missing benchmark source {src_path}")
+
+
+def package_dataset(dataset_dir: Path, repo_root: Path, output_zip: Path) -> Path:
+    """Zips interleaved-continual-v1 dataset and evaluation benchmarks."""
     output_zip.parent.mkdir(parents=True, exist_ok=True)
     if output_zip.exists():
         output_zip.unlink()
@@ -19,17 +34,18 @@ def package_dataset(dataset_dir: Path, output_zip: Path) -> Path:
             for file in files:
                 full_path = Path(root) / file
                 rel_path = full_path.relative_to(dataset_dir)
-                # Store under interleaved-continual-v1/ prefix
                 archive_name = Path("interleaved-continual-v1") / rel_path
                 zf.write(full_path, str(archive_name))
+
+        add_benchmarks(zf, repo_root)
 
     size_mb = output_zip.stat().st_size / (1024 * 1024)
     print(f"Dataset zip created successfully: {output_zip} ({size_mb:.2f} MB)")
     return output_zip
 
 
-def package_all_in_one(dataset_dir: Path, base_artifact_dir: Path, output_zip: Path) -> Path:
-    """Zips dataset + Base V2 checkpoint artifacts into a single all-in-one bundle."""
+def package_all_in_one(dataset_dir: Path, base_artifact_dir: Path, repo_root: Path, output_zip: Path) -> Path:
+    """Zips dataset + Base V2 checkpoint artifacts + benchmarks into a single all-in-one bundle."""
     output_zip.parent.mkdir(parents=True, exist_ok=True)
     if output_zip.exists():
         output_zip.unlink()
@@ -60,6 +76,9 @@ def package_all_in_one(dataset_dir: Path, base_artifact_dir: Path, output_zip: P
             archive_name = Path("base_v2_checkpoint") / name
             zf.write(file_path, str(archive_name))
 
+        # 3. Add benchmarks
+        add_benchmarks(zf, repo_root)
+
     size_mb = output_zip.stat().st_size / (1024 * 1024)
     print(f"All-in-one bundle created successfully: {output_zip} ({size_mb:.2f} MB)")
     return output_zip
@@ -73,15 +92,16 @@ def main() -> None:
     parser.add_argument("--mode", choices=("dataset", "all-in-one", "both"), default="both")
     args = parser.parse_args()
 
+    repo_root = Path(__file__).resolve().parents[1]
     dataset_path = Path(args.dataset)
     base_path = Path(args.base_artifact)
     out_dir = Path(args.output_dir)
 
     if args.mode in ("dataset", "both"):
-        package_dataset(dataset_path, out_dir / "reparos-continual-v1-dataset.zip")
+        package_dataset(dataset_path, repo_root, out_dir / "reparos-continual-v1-dataset.zip")
 
     if args.mode in ("all-in-one", "both"):
-        package_all_in_one(dataset_path, base_path, out_dir / "reparos-continual-all-in-one.zip")
+        package_all_in_one(dataset_path, base_path, repo_root, out_dir / "reparos-continual-all-in-one.zip")
 
 
 if __name__ == "__main__":

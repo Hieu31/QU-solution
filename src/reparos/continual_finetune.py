@@ -35,6 +35,15 @@ def prepare_finetune_corpora(
         OpenNMT 'data' dictionary configuration
     """
     data_dir = Path(dataset_root)
+
+    # Auto-normalize if pointed to train/ or eval/ child folder
+    if data_dir.name in ("train", "eval") and (data_dir.parent / "train").is_dir() and (data_dir.parent / "eval").is_dir():
+        data_dir = data_dir.parent
+    elif not ((data_dir / "train").is_dir() and (data_dir / "eval").is_dir()):
+        children = [p for p in data_dir.glob("*") if p.is_dir() and (p / "train").is_dir() and (p / "eval").is_dir()]
+        if children:
+            data_dir = children[0]
+
     out_dir = Path(run_root)
     out_dir.mkdir(parents=True, exist_ok=True)
 
@@ -42,7 +51,7 @@ def prepare_finetune_corpora(
     eval_dir = data_dir / "eval"
 
     if not train_dir.is_dir() or not eval_dir.is_dir():
-        raise FileNotFoundError(f"Missing train or eval directory in {dataset_root}")
+        raise FileNotFoundError(f"Missing train or eval directory in {data_dir} (passed: {dataset_root})")
 
     def read_jsonl_pairs(folder: Path) -> list[tuple[str, str]]:
         pairs = []
@@ -139,6 +148,9 @@ def build_finetune_config(
     save_checkpoint_steps: int = 250,
     valid_steps: int = 250,
     keep_checkpoint: int = 15,
+    batch_size: int = 4096,
+    bucket_size: int = 16384,
+    num_workers: int = 2,
 ) -> Path:
     """Builds OpenNMT configuration for continual fine-tuning from Base V2 checkpoint."""
     base_cfg = json.loads(Path(base_config_path).read_text(encoding="utf-8"))
@@ -166,6 +178,10 @@ def build_finetune_config(
         "save_checkpoint_steps": save_checkpoint_steps,
         "keep_checkpoint": keep_checkpoint,
         "data": data_config,
+        "batch_size": batch_size,
+        "bucket_size": bucket_size,
+        "num_workers": num_workers,
+        "accum_count": [1],
         "overwrite": True,
     })
 
@@ -181,6 +197,8 @@ def evaluate_continual_splits(
 ) -> dict[str, Any]:
     """Evaluates a CTranslate2 predictor across the 4 continual evaluation splits."""
     eval_dir = Path(eval_root)
+    if (eval_dir / "eval").is_dir() and not (eval_dir / "plasticity").is_dir():
+        eval_dir = eval_dir / "eval"
     results: dict[str, Any] = {}
 
     def run_split(folder: Path) -> dict[str, Any]:
