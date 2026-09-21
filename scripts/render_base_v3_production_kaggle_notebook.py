@@ -36,9 +36,10 @@ def main():
 This notebook executes official pre-training from scratch for **ReparoS Base V3** using the production dataset of **4,000,000 unique pairs**.
 
 ### Key Features:
-- **Clean Output Logging:** Verbose training logs are redirected to `train.log`. Only milestone checkpoints and step summaries (every 2,000 steps) are displayed to keep the notebook interface clean.
+- **Clean Milestone Logging:** Verbose OpenNMT step logs are safely redirected to `train.log`. The notebook cell displays milestone progress every 2,000 steps and checkpoint saves, keeping the output clean.
+- **Auto-Crash Diagnostics:** If an error occurs, the notebook automatically surfaces the last 25 lines of `train.log` right inside the cell output.
 - **Zero-Leakage Certified:** 100% leak-free, zero held-out brands, zero eval overlaps, zero label contradictions.
-- **Automated Frozen Evaluation:** Automatically benchmarks the final checkpoint against all 3,150 test queries across all 6 test suites upon completion.
+- **Automated Frozen Evaluation:** Benchmarks the final checkpoint against all 3,150 test queries across all 6 frozen test suites upon completion.
 """))
 
     # Cell 2: Hyperparameters
@@ -54,53 +55,80 @@ SEED = 2026
 REPORT_EVERY = 2_000
 """))
 
-    # Cell 3: Environment Setup & Unpacking
+    # Cell 3: Environment Setup, Dataset Detection & Dependency Management
     cells.append(code("""import json, os, shutil, subprocess, sys, time
 from pathlib import Path
 
 KAGGLE_INPUT = Path('/kaggle/input')
 REPO_ROOT = Path('/kaggle/working/QU-solution')
 
-# 1. Locate attached bundle
-bundle_candidates = list(KAGGLE_INPUT.rglob('reparos-base-v3-production-data.zip'))
-if not bundle_candidates:
-    bundle_candidates = list(KAGGLE_INPUT.rglob('*.zip'))
+# 1. Locate dataset bundle (supports both Kaggle auto-extracted folders and .zip files)
+print("Locating dataset under /kaggle/input...")
+extracted_candidate = None
+zip_candidate = None
 
-assert bundle_candidates, f"No bundle zip found under /kaggle/input! Please attach the dataset."
-bundle_zip = bundle_candidates[0]
-print(f"Found production bundle: {bundle_zip}")
+for p in KAGGLE_INPUT.rglob('data/base_v3_production'):
+    if p.is_dir():
+        extracted_candidate = p.parent.parent
+        break
 
-# 2. Extract into /kaggle/working/QU-solution
+if not extracted_candidate:
+    zips = sorted(list(KAGGLE_INPUT.rglob('*.zip')))
+    if zips:
+        zip_candidate = zips[0]
+
 if REPO_ROOT.exists():
     shutil.rmtree(REPO_ROOT)
 REPO_ROOT.mkdir(parents=True, exist_ok=True)
 
-print("Unpacking production bundle...")
-subprocess.run(['unzip', '-q', str(bundle_zip), '-d', str(REPO_ROOT)], check=True)
-print("Unpacking complete!")
+if extracted_candidate:
+    print(f"Found already extracted dataset at: {extracted_candidate}")
+    for folder in ['src', 'scripts', 'data']:
+        src_dir = extracted_candidate / folder
+        dst_dir = REPO_ROOT / folder
+        if src_dir.exists():
+            print(f"  Copying {folder}/ to {dst_dir}...")
+            shutil.copytree(src_dir, dst_dir)
+elif zip_candidate:
+    print(f"Found zip bundle at: {zip_candidate}")
+    print("Unpacking zip bundle into /kaggle/working/QU-solution...")
+    subprocess.run(['unzip', '-q', str(zip_candidate), '-d', str(REPO_ROOT)], check=True)
+else:
+    raise FileNotFoundError("Could not find dataset in /kaggle/input! Please ensure your Kaggle dataset is attached.")
 
-# 3. Setup Python path
+print("Project workspace successfully initialized at /kaggle/working/QU-solution!")
+
+# 2. Setup Python environment and path
 os.chdir(REPO_ROOT)
 sys.path.insert(0, str(REPO_ROOT / 'src'))
 
-# 4. Install OpenNMT and SentencePiece if needed
+# 3. Ensure NumPy < 2 for OpenNMT / PyTorch C-extension compatibility
+try:
+    import numpy as np
+    if int(np.__version__.split('.')[0]) >= 2:
+        print(f"NumPy {np.__version__} detected. Downgrading to numpy<2 for OpenNMT compatibility...")
+        subprocess.run([sys.executable, '-m', 'pip', 'install', 'numpy<2', '--quiet'], check=True)
+except Exception:
+    pass
+
+# 4. Install OpenNMT-py and sentencepiece if not present
 try:
     import onmt
     import sentencepiece
-    print("OpenNMT and SentencePiece already installed.")
+    print("OpenNMT-py and sentencepiece are ready.")
 except ImportError:
-    print("Installing OpenNMT-py and sentencepiece...")
-    subprocess.run([sys.executable, '-m', 'pip', 'install', 'OpenNMT-py==3.5.1', 'sentencepiece'], check=True)
+    print("Installing OpenNMT-py==3.5.1, sentencepiece, and numpy<2...")
+    subprocess.run([sys.executable, '-m', 'pip', 'install', 'numpy<2', 'OpenNMT-py==3.5.1', 'sentencepiece', '--quiet'], check=True)
 """))
 
-    # Cell 4: Verify Production Dataset & Audit
+    # Cell 4: Verify Production Dataset Integrity
     cells.append(code("""DATA_DIR = REPO_ROOT / 'data/base_v3_production'
 TOKENIZER_MODEL = REPO_ROOT / 'data/tokenizer_v3/tokenizer.model'
 EVAL_DIR = REPO_ROOT / 'data/base_v3_eval'
 
-assert (DATA_DIR / 'train.src').exists(), "train.src not found!"
-assert (DATA_DIR / 'train.tgt').exists(), "train.tgt not found!"
-assert TOKENIZER_MODEL.exists(), "tokenizer.model not found!"
+assert (DATA_DIR / 'train.src').exists(), f"train.src not found in {DATA_DIR}!"
+assert (DATA_DIR / 'train.tgt').exists(), f"train.tgt not found in {DATA_DIR}!"
+assert TOKENIZER_MODEL.exists(), f"tokenizer.model not found in {TOKENIZER_MODEL}!"
 
 # Verify line counts
 src_lines = sum(1 for _ in open(DATA_DIR / 'train.src', 'r', encoding='utf-8'))
@@ -180,16 +208,17 @@ with open(config_path, 'w', encoding='utf-8') as f:
 
 # Build Vocab
 vocab_src = DATA_DIR / 'vocab.src'
-if not vocab_src.is_file() or vocab_src.stat().st_size == 0:
+vocab_tgt = DATA_DIR / 'vocab.tgt'
+if not vocab_src.is_file() or not vocab_tgt.is_file() or vocab_src.stat().st_size == 0:
     print("Building OpenNMT vocab with Tokenizer V3...")
     subprocess.run([
         sys.executable, '-m', 'onmt.bin.build_vocab',
         '-config', str(config_path), '-n_sample', '-1'
     ], check=True)
-print("Vocab ready!")
+print("Vocab built successfully! Ready for training.")
 """))
 
-    # Cell 6: Train OpenNMT with Clean Output Logging
+    # Cell 6: Train OpenNMT with Clean Output Logging & Crash Diagnostics
     cells.append(code("""log_file = CKPT_DIR / 'train.log'
 print(f"Starting Pre-training to {TRAIN_STEPS:,} steps...")
 print(f"Detailed logs redirected to {log_file} (clean milestone display below):\\n")
@@ -209,7 +238,16 @@ with open(log_file, 'w', encoding='utf-8') as log_f:
         if 'Step ' in line and ('acc:' in line or 'loss:' in line or 'Saving checkpoint' in line):
             print(f"[{time.strftime('%H:%M:%S')}] {line.strip()}", flush=True)
     proc.wait()
+
     if proc.returncode != 0:
+        print("\\n" + "!" * 75)
+        print(f"TRAINING ENCOUNTERED AN ERROR (EXIT CODE {proc.returncode})!")
+        print("Last 25 lines of train.log:")
+        print("!" * 75)
+        with open(log_file, 'r', encoding='utf-8') as f_read:
+            last_lines = f_read.readlines()[-25:]
+            print(''.join(last_lines))
+        print("!" * 75)
         raise subprocess.CalledProcessError(proc.returncode, 'onmt.bin.train')
 
 elapsed_hours = (time.time() - t0) / 3600
@@ -221,7 +259,7 @@ best_ckpt = ckpts[-1]
 print(f"Final Checkpoint: {best_ckpt}")
 """))
 
-    # Cell 7: Unified Frozen Evaluation
+    # Cell 7: Unified Frozen Evaluation Across 3,150 Test Queries
     cells.append(code("""eval_script = REPO_ROOT / 'scripts/evaluate_base_v3_ablation.py'
 eval_cmd = [
     sys.executable, str(eval_script),
