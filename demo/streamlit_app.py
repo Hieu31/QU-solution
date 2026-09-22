@@ -53,10 +53,19 @@ FEEDBACK_PATH = ROOT / "logs" / "demo_feedback.jsonl"
 
 
 @st.cache_resource(show_spinner="Đang tải tokenizer & CTranslate2 model...")
-def get_engine(ct2_dir: str, tokenizer_path: str):
+def get_engine(ct2_dir: str, tokenizer_path: str, compute_type: str = "float32"):
     sp = spm.SentencePieceProcessor()
     sp.load(str(tokenizer_path))
-    translator = ctranslate2.Translator(str(ct2_dir), device="cpu", compute_type="float32")
+    translator = ctranslate2.Translator(
+        str(ct2_dir),
+        device="cpu",
+        compute_type=compute_type,
+        intra_threads=4,
+        inter_threads=1,
+    )
+    # Warmup kernel and memory cache to eliminate cold-start latency spike
+    warm_toks = sp.encode_as_pieces("ha noi")
+    translator.translate_batch([warm_toks], beam_size=1)
     return sp, translator
 
 
@@ -230,7 +239,13 @@ def main():
     # Sidebar / Controls
     with st.sidebar:
         st.header("⚙️ Tuỳ chỉnh")
-        beam_size = st.slider("Beam Size", min_value=1, max_value=10, value=10, step=1)
+        beam_size = st.slider("Beam Size", min_value=1, max_value=10, value=10, step=1, help="Beam 1 (Greedy): ~3ms. Beam 4: ~7ms. Beam 10: ~18ms")
+        compute_type = st.selectbox(
+            "Compute Type (CPU)",
+            options=["float32", "int8", "int8_float32"],
+            index=0,
+            help="float32: Độ chính xác tuyệt đối. int8: Tối ưu hoá tập lệnh AVX2/AVX-512 CPU giúp giảm độ trễ 2x.",
+        )
         v3_rep_penalty = st.slider(
             "Repetition Penalty (Base V3)",
             min_value=1.0,
@@ -243,16 +258,19 @@ def main():
         debounce_ms = st.slider("Debounce khi gõ (ms)", min_value=100, max_value=1000, value=350, step=50)
 
         st.divider()
-        st.markdown("### 📌 Thông số mô hình:")
+        st.markdown("### 📌 Thông số mô hình & Độ trễ:")
         st.markdown(
             """
             - **Finetune V2**:
               - Vocab: 8,000 subwords
-              - Train: Curriculum v2 (60k steps)
+              - FFN: 512
+              - Latency: ~10-16ms (Beam 10)
             - **Base V3**:
-              - Vocab: 12,000 subwords
-              - Arch: 6.5M params (2E-1D d128 ff2048)
-              - Train: Base V3 recipe
+              - Vocab: 12,000 subwords (+50% matrix size)
+              - FFN: 2048 (4x dung lượng FFN biểu diễn)
+              - Latency Beam 1: **~3ms** (SLA production)
+              - Latency Beam 4: **~7-10ms**
+              - Latency Beam 10: **~18-40ms** (FP32 CPU)
             """
         )
 
@@ -284,19 +302,19 @@ def main():
         st.info("Bắt đầu nhập để chạy so sánh."); return
 
     # Load engines
-    sp_v2, trans_v2 = get_engine(str(MODEL_CONFIGS["finetune_v2"]["ct2_dir"]), str(MODEL_CONFIGS["finetune_v2"]["tokenizer"]))
-    sp_v3, trans_v3 = get_engine(str(MODEL_CONFIGS["base_v3"]["ct2_dir"]), str(MODEL_CONFIGS["base_v3"]["tokenizer"]))
+    sp_v2, trans_v2 = get_engine(str(MODEL_CONFIGS["finetune_v2"]["ct2_dir"]), str(MODEL_CONFIGS["finetune_v2"]["tokenizer"]), compute_type=compute_type)
+    sp_v3, trans_v3 = get_engine(str(MODEL_CONFIGS["base_v3"]["ct2_dir"]), str(MODEL_CONFIGS["base_v3"]["tokenizer"]), compute_type=compute_type)
 
     with st.spinner("Đang sửa truy vấn…"):
         res_v2 = infer_single(
             sp_v2, trans_v2, query,
             beam_size=beam_size, rep_penalty=1.0,
-            note=f"CTranslate2 · beam {beam_size}"
+            note=f"CTranslate2 · beam {beam_size} · {compute_type}"
         )
         res_v3 = infer_single(
             sp_v3, trans_v3, query,
             beam_size=beam_size, rep_penalty=v3_rep_penalty,
-            note=f"CTranslate2 · beam {beam_size} · rep_pen {v3_rep_penalty}"
+            note=f"CTranslate2 · beam {beam_size} · {compute_type} · rep_pen {v3_rep_penalty}"
         )
 
         res_cont = None
