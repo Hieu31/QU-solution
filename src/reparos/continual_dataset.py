@@ -65,13 +65,6 @@ assert set(SEEN_PROTECTED_ENTITIES).isdisjoint(set(HELDOUT_PROTECTED_ENTITIES)),
 # -----------------------------------------------------------------------------
 
 CURATED_ACRONYMS = {
-    "ltk": "lý thường kiệt",
-    "nct": "nguyễn chí thanh",
-    "hbt": "hai bà trưng",
-    "dbp": "điện biên phủ",
-    "pvh": "phạm văn hai",
-    "ntmk": "nguyễn thị minh khai",
-    "nvl": "nguyễn văn linh",
     "thpt clhp": "trung học phổ thông chuyên lê hồng phong",
     "thpt tdn": "trung học phổ thông trần đại nghĩa",
     "dhbk": "đại học bách khoa",
@@ -99,7 +92,8 @@ SAMPLE_CITIES = ["thành phố hồ chí minh", "hà nội", "đà nẵng", "h�
 # 3. RECTIFIED ADDRESS ABBREVIATION GENERATOR (GROUP A)
 # -----------------------------------------------------------------------------
 
-_STREET_PREFIX_RE = re.compile(r"(?<!\bthành\s)\b(?:đường|phố)\s+", re.IGNORECASE)
+# Strictly match "đường", NEVER "phố", to enforce canonical d/đ -> đường contract
+_STREET_PREFIX_RE = re.compile(r"(?<!\bthành\s)\b(?:đường)\s+", re.IGNORECASE)
 _DISTRICT_PREFIX_RE = re.compile(r"\bquận\s+(\d+|[a-zA-Z\s\u00C0-\u024F]+)", re.IGNORECASE)
 _WARD_PREFIX_RE = re.compile(r"\bphường\s+(\d+|[a-zA-Z\s\u00C0-\u024F]+)", re.IGNORECASE)
 _CITY_PREFIX_RE = re.compile(r"\bthành phố\s+", re.IGNORECASE)

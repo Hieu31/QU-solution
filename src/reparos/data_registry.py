@@ -103,14 +103,15 @@ CURATED_ACRONYMS = {
 LANE2_EXPANSION_TRIGGERS = {
     "bv", "bv.", "d.", "đ.", "d", "đ", "q.", "q", "p.", "p", "tp.", "tp", "tx.", "tx", "tt.", "tt",
     "ql.", "ql", "tl.", "tl", "kdc.", "kdc", "kcn.", "kcn", "tp hcm", "tphcm", "hcm", "hn", "đn", "hp", "ct",
-    "ltk", "nct", "hbt", "dbp", "pvh", "ntmk", "nvl", "dhbk", "ubnd", "thpt"
+    "dhbk", "ubnd", "thpt"
 }
 
 # -----------------------------------------------------------------------------
 # 4. ADDRESS REGEX RULES WITH NEGATIVE LOOKBEHINDS
 # -----------------------------------------------------------------------------
 
-STREET_PREFIX_RE = re.compile(r"(?<!\bthành\s)\b(?:đường|phố)\s+", re.IGNORECASE)
+# Strictly match "đường", NEVER "phố", to enforce canonical d/đ -> đường contract
+STREET_PREFIX_RE = re.compile(r"(?<!\bthành\s)\b(?:đường)\s+", re.IGNORECASE)
 DISTRICT_PREFIX_RE = re.compile(r"\bquận\s+(\d+|[a-zA-Z\s\u00C0-\u024F]+)", re.IGNORECASE)
 WARD_PREFIX_RE = re.compile(r"\bphường\s+(\d+|[a-zA-Z\s\u00C0-\u024F]+)", re.IGNORECASE)
 CITY_PREFIX_RE = re.compile(r"\bthành phố\s+", re.IGNORECASE)

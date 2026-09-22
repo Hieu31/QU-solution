@@ -76,6 +76,14 @@ class ZeroClickQualityFilter:
 
         tokens = q.split()
 
+        # Check 0a: Chat spam, long customer service text, or phone numbers
+        if len(tokens) > 20:
+            return "REJECTED_GARBAGE", "query_too_long_chat_spam"
+        if re.search(r"\b0\d{9,10}\b|\b0\d{3}\s+\d{3}\s+\d{3,4}\b", q):
+            return "REJECTED_GARBAGE", "contains_phone_number"
+        if re.search(r"\b(?:zalo|viber|inbox|nhắn tin|chào anh|chào chị|em chào|liên hệ|sđt|hotline)\b", q, re.IGNORECASE) and len(tokens) > 8:
+            return "REJECTED_GARBAGE", "chat_customer_service_message"
+
         # Check 1: Trailing punctuation
         if INCOMPLETE_ENDING_PUNCT_REGEX.search(q):
             return "AMBIGUOUS_PREFIX", "incomplete_trailing_punctuation"
