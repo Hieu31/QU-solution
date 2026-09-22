@@ -274,8 +274,18 @@ def main():
             """
         )
 
+    # Helper for preset button clicks
+    def select_preset(text: str):
+        st.session_state["query_input"] = text
+        st.session_state["search_counter"] = st.session_state.get("search_counter", 0) + 1
+
+    if "query_input" not in st.session_state:
+        st.session_state["query_input"] = "cau vuot song than"
+    if "search_counter" not in st.session_state:
+        st.session_state["search_counter"] = 0
+
     # Preset queries for quick testing from real Zero-Click logs
-    st.markdown("##### 📂 Ca mẫu thực tế trích xuất từ `zero_click.csv`:")
+    st.markdown("##### 📂 Ca mẫu thực tế trích xuất từ `zero_click.csv` (Click để test ngay):")
     tab1, tab2, tab3, tab4 = st.tabs([
         "🏙️ Địa danh & Chợ & Nút giao",
         "🏥 Bệnh viện & Trường học & TTTM",
@@ -286,71 +296,56 @@ def main():
     with tab1:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            if st.button("🌉 cau vuot song than", use_container_width=True, help="V2: sông than (sai) | V3: sóng thần (đúng)"):
-                st.session_state["query_input"] = "cau vuot song than"
+            st.button("🌉 cau vuot song than", on_click=select_preset, args=("cau vuot song than",), use_container_width=True, help="V2: sông than (sai) | V3: sóng thần (đúng)")
         with c2:
-            if st.button("🛒 cho ba chieu", use_container_width=True, help="V2: ba chiêu (sai) | V3: bà chiểu (đúng)"):
-                st.session_state["query_input"] = "cho ba chieu"
+            st.button("🛒 cho ba chieu", on_click=select_preset, args=("cho ba chieu",), use_container_width=True, help="V2: ba chiêu (sai) | V3: bà chiểu (đúng)")
         with c3:
-            if st.button("🚦 nga 4 hang xanh", use_container_width=True):
-                st.session_state["query_input"] = "nga 4 hang xanh"
+            st.button("🚦 nga 4 hang xanh", on_click=select_preset, args=("nga 4 hang xanh",), use_container_width=True)
         with c4:
-            if st.button("⚓ nga 3 vung tau", use_container_width=True):
-                st.session_state["query_input"] = "nga 3 vung tau"
+            st.button("⚓ nga 3 vung tau", on_click=select_preset, args=("nga 3 vung tau",), use_container_width=True)
 
     with tab2:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            if st.button("🏥 bv cho ray", use_container_width=True, help="V2: chợ ray (sai) | V3: chợ rẫy (đúng)"):
-                st.session_state["query_input"] = "bv cho ray"
+            st.button("🏥 bv cho ray", on_click=select_preset, args=("bv cho ray",), use_container_width=True, help="V2: chợ ray (sai) | V3: chợ rẫy (đúng)")
         with c2:
-            if st.button("👶 Bv nhi đong", use_container_width=True):
-                st.session_state["query_input"] = "Bv nhi đong"
+            st.button("👶 Bv nhi đong", on_click=select_preset, args=("Bv nhi đong",), use_container_width=True)
         with c3:
-            if st.button("🚑 benh vien 175", use_container_width=True):
-                st.session_state["query_input"] = "benh vien 175"
+            st.button("🚑 benh vien 175", on_click=select_preset, args=("benh vien 175",), use_container_width=True)
         with c4:
-            if st.button("🎓 dh kinh te tphcm", use_container_width=True):
-                st.session_state["query_input"] = "dh kinh te tphcm"
+            st.button("🎓 dh kinh te tphcm", on_click=select_preset, args=("dh kinh te tphcm",), use_container_width=True)
 
     with tab3:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            if st.button("🏠 86 xo viet nghe tinh p19 binh thanh", use_container_width=True):
-                st.session_state["query_input"] = "86 xo viet nghe tinh p19 binh thanh"
+            st.button("🏠 86 xo viet nghe tinh p19 binh thanh", on_click=select_preset, args=("86 xo viet nghe tinh p19 binh thanh",), use_container_width=True)
         with c2:
-            if st.button("🛣️ duong le van viet q9", use_container_width=True):
-                st.session_state["query_input"] = "duong le van viet q9"
+            st.button("🛣️ duong le van viet q9", on_click=select_preset, args=("duong le van viet q9",), use_container_width=True)
         with c3:
-            if st.button("🚪 hem 212 thoai ngoc hau phuong phu thanh", use_container_width=True):
-                st.session_state["query_input"] = "hem 212 thoai ngoc hau phuong phu thanh"
+            st.button("🚪 hem 212 thoai ngoc hau phuong phu thanh", on_click=select_preset, args=("hem 212 thoai ngoc hau phuong phu thanh",), use_container_width=True)
         with c4:
-            if st.button("🏭 kcn song than 1", use_container_width=True):
-                st.session_state["query_input"] = "kcn song than 1"
+            st.button("🏭 kcn song than 1", on_click=select_preset, args=("kcn song than 1",), use_container_width=True)
 
     with tab4:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            if st.button("⌨️ 158/16 binh quew", use_container_width=True, help="V2: bình quế (bịa từ) | V3: bình quêw (bảo toàn)"):
-                st.session_state["query_input"] = "158/16 binh quew"
+            st.button("⌨️ 158/16 binh quew", on_click=select_preset, args=("158/16 binh quew",), use_container_width=True, help="V2: bình quế (bịa từ) | V3: bình quêw (bảo toàn)")
         with c2:
-            if st.button("🏢 chung cu ha", use_container_width=True, help="Gõ dở dang: V2 đoán bừa 'hạ' | V3 giữ 'ha'"):
-                st.session_state["query_input"] = "chung cu ha"
+            st.button("🏢 chung cu ha", on_click=select_preset, args=("chung cu ha",), use_container_width=True, help="Gõ dở dang: V2 đoán bừa 'hạ' | V3 giữ 'ha'")
         with c3:
-            if st.button("🔤 ngã 6 tahnhf", use_container_width=True, help="Lỗi gõ phím đảo: tahnhf"):
-                st.session_state["query_input"] = "ngã 6 tahnhf"
+            st.button("🔤 ngã 6 tahnhf", on_click=select_preset, args=("ngã 6 tahnhf",), use_container_width=True, help="Lỗi gõ phím đảo: tahnhf")
         with c4:
-            if st.button("🏬 tttm aeon mall tan phu", use_container_width=True):
-                st.session_state["query_input"] = "tttm aeon mall tan phu"
+            st.button("🏬 tttm aeon mall tan phu", on_click=select_preset, args=("tttm aeon mall tan phu",), use_container_width=True)
 
-    default_query = st.session_state.get("query_input", "cau vuot song than")
-
+    active_key = f"live_search_input_{st.session_state['search_counter']}"
     query = st_keyup(
-        "Nhập truy vấn địa điểm",
-        value=default_query,
+        "Nhập hoặc chọn truy vấn địa điểm cần sửa lỗi:",
+        value=st.session_state["query_input"],
         debounce=debounce_ms,
-        key="live_search_input",
+        key=active_key,
     )
+    if query != st.session_state["query_input"]:
+        st.session_state["query_input"] = query
 
     if not query or not query.strip():
         st.info("Bắt đầu nhập để chạy so sánh."); return
