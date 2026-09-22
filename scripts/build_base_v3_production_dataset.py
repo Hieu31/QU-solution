@@ -16,6 +16,7 @@ from typing import Dict, List, Set, Tuple
 
 # Force UTF-8 stdout
 sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
+sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 
 from reparos.continual_dataset import (
     generate_address_abbreviation,
@@ -250,10 +251,10 @@ def build_production_pools(
                         if len(pools["lane3_clean"]) >= 750_000:
                             break
 
-    # 3b. Seen Brands combined with real addresses (700,000 unique combinations)
+    # 3b. Seen Brands combined with real addresses (850,000 unique combinations)
     print("  Synthesizing Seen Brands with real street addresses...")
     seen_brands_list = list(SEEN_BRANDS)
-    for repeat in range(2):
+    for repeat in range(3):
         for i, line in enumerate(clean_osm_lines):
             brand = seen_brands_list[(i + repeat * 19) % len(seen_brands_list)]
             prefix = rng.choice(BRAND_PREFIXES)
@@ -269,46 +270,35 @@ def build_production_pools(
                 valid, _ = is_canonical_valid_pair(text, text)
                 if valid:
                     pools["lane3_brand"].append((text, text))
-                    if len(pools["lane3_brand"]) >= 750_000:
+                    if len(pools["lane3_brand"]) >= 850_000:
                         break
-        if len(pools["lane3_brand"]) >= 750_000:
+        if len(pools["lane3_brand"]) >= 850_000:
             break
     print(f"  -> Lane 3 gathered: {len(pools['lane3_clean']):,} Clean + {len(pools['lane3_brand']):,} Brands in {time.time()-t0:.1f}s")
 
     # -------------------------------------------------------------
-    # 4. Lane 4: Real Query Adaptation (Quota: 400,000 - 200k DAE + 200k Id)
+    # 4. Lane 4: Multi-Error DAE on Clean OSM Seeds (100% Pure Clean Targets)
     # -------------------------------------------------------------
-    print("\n[4/4] Gathering Lane 4 Pool from zero_click.csv (Confidence-Gated)...")
+    print("\n[4/4] Generating Lane 4 Pool: Multi-Error DAE on Clean OSM Seeds (Zero Untrusted Data)...")
     t0 = time.time()
     qf = ZeroClickQualityFilter()
-    zc_path = Path("data/zero_click.csv")
-    high_conf_queries: List[str] = []
-
-    with open(zc_path, "r", encoding="utf-8", errors="replace") as f:
-        reader = csv.reader(f)
-        next(reader, None)
-        for row in reader:
-            if not row or not row[0]:
+    shuffled_osm = list(clean_osm_lines)
+    rng.shuffle(shuffled_osm)
+    for repeat in range(2):
+        for line in shuffled_osm:
+            if len(line.split()) < 2 or line in eval_queries_set or contains_heldout(line):
                 continue
-            cat, _ = qf.classify(row[0])
-            if cat == "HIGH_CONFIDENCE_CLEAN":
-                q = canonicalize_target(row[0])
-                if q not in eval_queries_set and not contains_heldout(q) and is_valid_vietnamese_script(q):
-                    valid, _ = is_canonical_valid_pair(q, q)
-                    if valid:
-                        high_conf_queries.append(q)
-                        if len(high_conf_queries) >= 750_000:
-                            break
+            s_dae, t_dae = qf.generate_dae_pair(line, rng)
+            t_dae = canonicalize_target(t_dae)
+            valid, _ = is_canonical_valid_pair(s_dae, t_dae)
+            if valid and s_dae != t_dae and s_dae not in eval_queries_set and is_valid_vietnamese_script(s_dae):
+                pools["lane4_dae"].append((s_dae, t_dae))
+                if len(pools["lane4_dae"]) >= 500_000:
+                    break
+        if len(pools["lane4_dae"]) >= 500_000:
+            break
 
-    print(f"  Extracted {len(high_conf_queries):,} high-confidence clean queries from zero_click.")
-    for q in high_conf_queries:
-        s_dae, t_dae = qf.generate_dae_pair(q, rng)
-        t_dae = canonicalize_target(t_dae)
-        valid, _ = is_canonical_valid_pair(s_dae, t_dae)
-        if valid and s_dae not in eval_queries_set and is_valid_vietnamese_script(s_dae):
-            pools["lane4_dae"].append((s_dae, t_dae))
-        pools["lane4_identity"].append((q, q))
-    print(f"  -> Lane 4 gathered: {len(pools['lane4_dae']):,} DAE + {len(pools['lane4_identity']):,} Identity in {time.time()-t0:.1f}s")
+    print(f"  -> Lane 4 gathered: {len(pools['lane4_dae']):,} pure DAE pairs in {time.time()-t0:.1f}s")
 
     return pools
 
@@ -321,6 +311,7 @@ def assemble_production_dataset(
 ) -> Tuple[Path, Path]:
     print("\n==================================================================")
     print("   ASSEMBLING BASE V3 PRODUCTION DATASET (EXACTLY 4,000,000 PAIRS)")
+    print("   100% PURE CLEAN BASE: NO ZERO_CLICK LOG CONTAMINATION")
     print("   Canonical Contract Recipe: >= 35% Clean/Identity (1.4M pairs)")
     print("==================================================================")
 
@@ -340,9 +331,8 @@ def assemble_production_dataset(
 
     # 1. Clean identity sources (Target: 1,400,000 = 35%)
     clean_sources = [
-        (pools["lane4_identity"], 500_000),
-        (pools["lane3_brand"], 500_000),
-        (pools["lane3_clean"], 400_000),
+        (pools["lane3_brand"], 750_000),
+        (pools["lane3_clean"], 750_000),
     ]
 
     print("\nPass 1: Allocating Clean Identity pairs (Target: 1,400,000)...")
@@ -387,7 +377,7 @@ def assemble_production_dataset(
 
     # 2. Noise & Reconstruction sources (Target: 2,600,000 = 65%)
     noise_sources = [
-        (pools["lane4_dae"], 200_000),
+        (pools["lane4_dae"], 400_000),
         (pools["lane2"], 900_000),
         (pools["lane1"], 1_500_000),
     ]

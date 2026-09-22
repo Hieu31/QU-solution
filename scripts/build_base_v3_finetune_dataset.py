@@ -439,34 +439,27 @@ def main():
     print(f"  Generated {len(pools['nested_acronym']):,} Nested Acronym pairs in {time.time()-t0:.1f}s.")
 
     # ------------------------------------------------------------------
-    # Step 4: 50,000 Hard Real Queries from zero_click.csv
+    # Step 5: 50,000 Multi-Error DAE Pairs from Clean Seeds
     # ------------------------------------------------------------------
-    print("\n[5/5] Extracting 50,000 Hard Real Queries from zero_click.csv...")
+    print("\n[5/5] Synthesizing 50,000 Multi-Error DAE Pairs from Clean Seeds (Zero Untrusted Data)...")
     t0 = time.time()
     qf = ZeroClickQualityFilter()
-    zc_path = REPO_ROOT / "data/zero_click.csv"
+    shuffled_seeds = list(seeds)
+    rng.shuffle(shuffled_seeds)
 
-    with open(zc_path, "r", encoding="utf-8", errors="replace") as f:
-        reader = csv.reader(f)
-        next(reader, None)
-        for row in reader:
-            if not row or not row[0]:
+    for q in shuffled_seeds:
+        if len(q.split()) >= 3 and not is_forbidden(q, q):
+            s_dae, t_dae = qf.generate_dae_pair(q, rng)
+            t_dae = canonicalize_target(t_dae)
+            valid, _ = is_canonical_valid_pair(s_dae, t_dae)
+            if not valid:
                 continue
-            cat, _ = qf.classify(row[0])
-            if cat == "HIGH_CONFIDENCE_CLEAN":
-                q = normalize(row[0])
-                if len(q.split()) >= 3 and not is_forbidden(q, q):
-                    s_dae, t_dae = qf.generate_dae_pair(q, rng)
-                    t_dae = canonicalize_target(t_dae)
-                    valid, _ = is_canonical_valid_pair(s_dae, t_dae)
-                    if not valid:
-                        continue
-                    if s_dae != t_dae and not is_forbidden(s_dae, t_dae):
-                        pools["real_user"].append((s_dae, t_dae))
-                        if len(pools["real_user"]) >= 60_000:
-                            break
+            if s_dae != t_dae and not is_forbidden(s_dae, t_dae):
+                pools["real_user"].append((s_dae, t_dae))
+                if len(pools["real_user"]) >= 60_000:
+                    break
 
-    print(f"  Extracted {len(pools['real_user']):,} Hard Real Query pairs in {time.time()-t0:.1f}s.")
+    print(f"  Synthesized {len(pools['real_user']):,} Multi-Error DAE pairs in {time.time()-t0:.1f}s.")
 
     # ------------------------------------------------------------------
     # Assembly & Deterministic Contradiction Resolution
