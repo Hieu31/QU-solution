@@ -275,14 +275,16 @@ def main():
         )
 
     # Helper for preset button clicks
-    def select_preset(text: str):
-        st.session_state["query_input"] = text
-        st.session_state["search_counter"] = st.session_state.get("search_counter", 0) + 1
-
-    if "query_input" not in st.session_state:
-        st.session_state["query_input"] = "cau vuot song than"
     if "search_counter" not in st.session_state:
         st.session_state["search_counter"] = 0
+    if "last_applied_counter" not in st.session_state:
+        st.session_state["last_applied_counter"] = -1
+    if "preset_query" not in st.session_state:
+        st.session_state["preset_query"] = "cau vuot song than"
+
+    def select_preset(text: str):
+        st.session_state["preset_query"] = text
+        st.session_state["search_counter"] += 1
 
     # Preset queries for quick testing from real Zero-Click logs
     st.markdown("##### 📂 Ca mẫu thực tế trích xuất từ `zero_click.csv` (Click để test ngay):")
@@ -337,17 +339,24 @@ def main():
         with c4:
             st.button("🏬 tttm aeon mall tan phu", on_click=select_preset, args=("tttm aeon mall tan phu",), use_container_width=True)
 
+    # If user clicked a preset, pass it once on mount of the new key; otherwise pass "" so JS does not rubberband when deleted!
+    is_new_preset = (st.session_state["search_counter"] != st.session_state["last_applied_counter"])
+    if is_new_preset:
+        initial_box_val = st.session_state["preset_query"]
+        st.session_state["last_applied_counter"] = st.session_state["search_counter"]
+    else:
+        initial_box_val = ""
+
     active_key = f"live_search_input_{st.session_state['search_counter']}"
-    query = st_keyup(
+    raw_query = st_keyup(
         "Nhập hoặc chọn truy vấn địa điểm cần sửa lỗi:",
-        value=st.session_state["query_input"],
+        value=initial_box_val,
         debounce=debounce_ms,
         key=active_key,
     )
-    if query != st.session_state["query_input"]:
-        st.session_state["query_input"] = query
+    query = (raw_query or "").strip()
 
-    if not query or not query.strip():
+    if not query:
         st.info("Bắt đầu nhập để chạy so sánh."); return
 
     # Load engines
