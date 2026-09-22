@@ -274,22 +274,76 @@ def main():
             """
         )
 
-    # Preset queries for quick testing
-    col_p1, col_p2, col_p3, col_p4 = st.columns(4)
-    with col_p1:
-        if st.button("📍 86 xo viet nghe tinh p19 binh thanh", use_container_width=True):
-            st.session_state["query_input"] = "86 xo viet nghe tinh p19 binh thanh"
-    with col_p2:
-        if st.button("🏥 bv cho ray", use_container_width=True):
-            st.session_state["query_input"] = "bv cho ray"
-    with col_p3:
-        if st.button("🔍 158/16 binh quew", use_container_width=True):
-            st.session_state["query_input"] = "158/16 binh quew"
-    with col_p4:
-        if st.button("🏫 dh bach khoa ha noi", use_container_width=True):
-            st.session_state["query_input"] = "dh bach khoa ha noi"
+    # Preset queries for quick testing from real Zero-Click logs
+    st.markdown("##### 📂 Ca mẫu thực tế trích xuất từ `zero_click.csv`:")
+    tab1, tab2, tab3, tab4 = st.tabs([
+        "🏙️ Địa danh & Chợ & Nút giao",
+        "🏥 Bệnh viện & Trường học & TTTM",
+        "📍 Địa chỉ & Viết tắt hành chính",
+        "⚠️ Gõ dở dang & Vướng phím Telex",
+    ])
 
-    default_query = st.session_state.get("query_input", "86 xo viet nghe tinh p19 binh thanh")
+    with tab1:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            if st.button("🌉 cau vuot song than", use_container_width=True, help="V2: sông than (sai) | V3: sóng thần (đúng)"):
+                st.session_state["query_input"] = "cau vuot song than"
+        with c2:
+            if st.button("🛒 cho ba chieu", use_container_width=True, help="V2: ba chiêu (sai) | V3: bà chiểu (đúng)"):
+                st.session_state["query_input"] = "cho ba chieu"
+        with c3:
+            if st.button("🚦 nga 4 hang xanh", use_container_width=True):
+                st.session_state["query_input"] = "nga 4 hang xanh"
+        with c4:
+            if st.button("⚓ nga 3 vung tau", use_container_width=True):
+                st.session_state["query_input"] = "nga 3 vung tau"
+
+    with tab2:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            if st.button("🏥 bv cho ray", use_container_width=True, help="V2: chợ ray (sai) | V3: chợ rẫy (đúng)"):
+                st.session_state["query_input"] = "bv cho ray"
+        with c2:
+            if st.button("👶 Bv nhi đong", use_container_width=True):
+                st.session_state["query_input"] = "Bv nhi đong"
+        with c3:
+            if st.button("🚑 benh vien 175", use_container_width=True):
+                st.session_state["query_input"] = "benh vien 175"
+        with c4:
+            if st.button("🎓 dh kinh te tphcm", use_container_width=True):
+                st.session_state["query_input"] = "dh kinh te tphcm"
+
+    with tab3:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            if st.button("🏠 86 xo viet nghe tinh p19 binh thanh", use_container_width=True):
+                st.session_state["query_input"] = "86 xo viet nghe tinh p19 binh thanh"
+        with c2:
+            if st.button("🛣️ duong le van viet q9", use_container_width=True):
+                st.session_state["query_input"] = "duong le van viet q9"
+        with c3:
+            if st.button("🚪 hem 212 thoai ngoc hau phuong phu thanh", use_container_width=True):
+                st.session_state["query_input"] = "hem 212 thoai ngoc hau phuong phu thanh"
+        with c4:
+            if st.button("🏭 kcn song than 1", use_container_width=True):
+                st.session_state["query_input"] = "kcn song than 1"
+
+    with tab4:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            if st.button("⌨️ 158/16 binh quew", use_container_width=True, help="V2: bình quế (bịa từ) | V3: bình quêw (bảo toàn)"):
+                st.session_state["query_input"] = "158/16 binh quew"
+        with c2:
+            if st.button("🏢 chung cu ha", use_container_width=True, help="Gõ dở dang: V2 đoán bừa 'hạ' | V3 giữ 'ha'"):
+                st.session_state["query_input"] = "chung cu ha"
+        with c3:
+            if st.button("🔤 ngã 6 tahnhf", use_container_width=True, help="Lỗi gõ phím đảo: tahnhf"):
+                st.session_state["query_input"] = "ngã 6 tahnhf"
+        with c4:
+            if st.button("🏬 tttm aeon mall tan phu", use_container_width=True):
+                st.session_state["query_input"] = "tttm aeon mall tan phu"
+
+    default_query = st.session_state.get("query_input", "cau vuot song than")
 
     query = st_keyup(
         "Nhập truy vấn địa điểm",
