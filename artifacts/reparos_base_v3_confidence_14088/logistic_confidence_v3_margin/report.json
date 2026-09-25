@@ -1,0 +1,1810 @@
+{
+  "queries": 14088,
+  "train_queries": 9888,
+  "calibration_queries": 2247,
+  "test_queries": 1953,
+  "train_base": {
+    "candidates": 98880,
+    "positive_candidates": 8358,
+    "positive_rate": 0.08452669902912621,
+    "brier_score": 0.0326291677394279,
+    "log_loss": 0.1207485271345697,
+    "mean_confidence": 0.08452669902912621,
+    "calibration_bins": [
+      {
+        "range": [
+          0.0,
+          0.1
+        ],
+        "count": 85122,
+        "mean_confidence": 0.01388238289860171,
+        "observed_exact_rate": 0.012534949836704964
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "count": 3332,
+        "mean_confidence": 0.1418920395385295,
+        "observed_exact_rate": 0.14285714285714285
+      },
+      {
+        "range": [
+          0.2,
+          0.3
+        ],
+        "count": 1010,
+        "mean_confidence": 0.237503294854709,
+        "observed_exact_rate": 0.30396039603960395
+      },
+      {
+        "range": [
+          0.3,
+          0.4
+        ],
+        "count": 739,
+        "mean_confidence": 0.35656599890624363,
+        "observed_exact_rate": 0.30987821380243574
+      },
+      {
+        "range": [
+          0.4,
+          0.5
+        ],
+        "count": 1223,
+        "mean_confidence": 0.4494822622809652,
+        "observed_exact_rate": 0.40228945216680295
+      },
+      {
+        "range": [
+          0.5,
+          0.6
+        ],
+        "count": 1349,
+        "mean_confidence": 0.5498642716393273,
+        "observed_exact_rate": 0.5181616011860638
+      },
+      {
+        "range": [
+          0.6,
+          0.7
+        ],
+        "count": 1336,
+        "mean_confidence": 0.6506103678017378,
+        "observed_exact_rate": 0.6609281437125748
+      },
+      {
+        "range": [
+          0.7,
+          0.8
+        ],
+        "count": 1457,
+        "mean_confidence": 0.7540058731709819,
+        "observed_exact_rate": 0.7947838023335622
+      },
+      {
+        "range": [
+          0.8,
+          0.9
+        ],
+        "count": 1874,
+        "mean_confidence": 0.8536921079631585,
+        "observed_exact_rate": 0.9103521878335112
+      },
+      {
+        "range": [
+          0.9,
+          1.0
+        ],
+        "count": 1438,
+        "mean_confidence": 0.9325689833383873,
+        "observed_exact_rate": 0.9325452016689847
+      }
+    ]
+  },
+  "calibration_base": {
+    "candidates": 22470,
+    "positive_candidates": 1985,
+    "positive_rate": 0.08834000890075656,
+    "brier_score": 0.03658404814623172,
+    "log_loss": 0.13120822617714217,
+    "mean_confidence": 0.08480286717744494,
+    "calibration_bins": [
+      {
+        "range": [
+          0.0,
+          0.1
+        ],
+        "count": 19397,
+        "mean_confidence": 0.012242921373388546,
+        "observed_exact_rate": 0.013868123936691241
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "count": 766,
+        "mean_confidence": 0.14047507056180078,
+        "observed_exact_rate": 0.26240208877284593
+      },
+      {
+        "range": [
+          0.2,
+          0.3
+        ],
+        "count": 164,
+        "mean_confidence": 0.23776767216480782,
+        "observed_exact_rate": 0.25
+      },
+      {
+        "range": [
+          0.3,
+          0.4
+        ],
+        "count": 145,
+        "mean_confidence": 0.3587268222434009,
+        "observed_exact_rate": 0.27586206896551724
+      },
+      {
+        "range": [
+          0.4,
+          0.5
+        ],
+        "count": 233,
+        "mean_confidence": 0.45258343448529087,
+        "observed_exact_rate": 0.36909871244635195
+      },
+      {
+        "range": [
+          0.5,
+          0.6
+        ],
+        "count": 248,
+        "mean_confidence": 0.5538278862463544,
+        "observed_exact_rate": 0.5443548387096774
+      },
+      {
+        "range": [
+          0.6,
+          0.7
+        ],
+        "count": 288,
+        "mean_confidence": 0.6524568501421388,
+        "observed_exact_rate": 0.6180555555555556
+      },
+      {
+        "range": [
+          0.7,
+          0.8
+        ],
+        "count": 344,
+        "mean_confidence": 0.7509243310756473,
+        "observed_exact_rate": 0.8343023255813954
+      },
+      {
+        "range": [
+          0.8,
+          0.9
+        ],
+        "count": 536,
+        "mean_confidence": 0.8488642305067629,
+        "observed_exact_rate": 0.7779850746268657
+      },
+      {
+        "range": [
+          0.9,
+          1.0
+        ],
+        "count": 349,
+        "mean_confidence": 0.9324162228657794,
+        "observed_exact_rate": 0.9484240687679083
+      }
+    ]
+  },
+  "calibration_calibrated": {
+    "candidates": 22470,
+    "positive_candidates": 1985,
+    "positive_rate": 0.08834000890075656,
+    "brier_score": 0.03612011575263047,
+    "log_loss": 0.12974912040758355,
+    "mean_confidence": 0.08834000890075656,
+    "calibration_bins": [
+      {
+        "range": [
+          0.0,
+          0.1
+        ],
+        "count": 19059,
+        "mean_confidence": 0.013516685636283669,
+        "observed_exact_rate": 0.012225195445721182
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "count": 757,
+        "mean_confidence": 0.15029085272190681,
+        "observed_exact_rate": 0.22721268163804492
+      },
+      {
+        "range": [
+          0.2,
+          0.3
+        ],
+        "count": 447,
+        "mean_confidence": 0.24181132388191376,
+        "observed_exact_rate": 0.18791946308724833
+      },
+      {
+        "range": [
+          0.3,
+          0.4
+        ],
+        "count": 233,
+        "mean_confidence": 0.34831749404274903,
+        "observed_exact_rate": 0.2918454935622318
+      },
+      {
+        "range": [
+          0.4,
+          0.5
+        ],
+        "count": 247,
+        "mean_confidence": 0.44712861756748573,
+        "observed_exact_rate": 0.38461538461538464
+      },
+      {
+        "range": [
+          0.5,
+          0.6
+        ],
+        "count": 263,
+        "mean_confidence": 0.5501045260018146,
+        "observed_exact_rate": 0.5627376425855514
+      },
+      {
+        "range": [
+          0.6,
+          0.7
+        ],
+        "count": 302,
+        "mean_confidence": 0.6507108632130796,
+        "observed_exact_rate": 0.6655629139072847
+      },
+      {
+        "range": [
+          0.7,
+          0.8
+        ],
+        "count": 351,
+        "mean_confidence": 0.7505145400941855,
+        "observed_exact_rate": 0.8603988603988604
+      },
+      {
+        "range": [
+          0.8,
+          0.9
+        ],
+        "count": 531,
+        "mean_confidence": 0.8456846472399214,
+        "observed_exact_rate": 0.7796610169491526
+      },
+      {
+        "range": [
+          0.9,
+          1.0
+        ],
+        "count": 280,
+        "mean_confidence": 0.9294485151248446,
+        "observed_exact_rate": 0.9571428571428572
+      }
+    ]
+  },
+  "test_base": {
+    "candidates": 19530,
+    "positive_candidates": 1651,
+    "positive_rate": 0.08453661034306195,
+    "brier_score": 0.03163645472633928,
+    "log_loss": 0.12133246453555946,
+    "mean_confidence": 0.08566142822223569,
+    "calibration_bins": [
+      {
+        "range": [
+          0.0,
+          0.1
+        ],
+        "count": 16877,
+        "mean_confidence": 0.013771681669156726,
+        "observed_exact_rate": 0.013153996563370267
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "count": 619,
+        "mean_confidence": 0.1398664661989275,
+        "observed_exact_rate": 0.14539579967689822
+      },
+      {
+        "range": [
+          0.2,
+          0.3
+        ],
+        "count": 172,
+        "mean_confidence": 0.23482108048452852,
+        "observed_exact_rate": 0.13372093023255813
+      },
+      {
+        "range": [
+          0.3,
+          0.4
+        ],
+        "count": 114,
+        "mean_confidence": 0.3604577766872358,
+        "observed_exact_rate": 0.3333333333333333
+      },
+      {
+        "range": [
+          0.4,
+          0.5
+        ],
+        "count": 256,
+        "mean_confidence": 0.4531136258088494,
+        "observed_exact_rate": 0.33984375
+      },
+      {
+        "range": [
+          0.5,
+          0.6
+        ],
+        "count": 201,
+        "mean_confidence": 0.5522156767473954,
+        "observed_exact_rate": 0.5373134328358209
+      },
+      {
+        "range": [
+          0.6,
+          0.7
+        ],
+        "count": 255,
+        "mean_confidence": 0.6499533544863333,
+        "observed_exact_rate": 0.6705882352941176
+      },
+      {
+        "range": [
+          0.7,
+          0.8
+        ],
+        "count": 299,
+        "mean_confidence": 0.7519731353564828,
+        "observed_exact_rate": 0.8461538461538461
+      },
+      {
+        "range": [
+          0.8,
+          0.9
+        ],
+        "count": 405,
+        "mean_confidence": 0.8524835579453209,
+        "observed_exact_rate": 0.8716049382716049
+      },
+      {
+        "range": [
+          0.9,
+          1.0
+        ],
+        "count": 332,
+        "mean_confidence": 0.9327045590973944,
+        "observed_exact_rate": 0.9216867469879518
+      }
+    ]
+  },
+  "test_calibrated": {
+    "candidates": 19530,
+    "positive_candidates": 1651,
+    "positive_rate": 0.08453661034306195,
+    "brier_score": 0.032000219845649096,
+    "log_loss": 0.12293218316114461,
+    "mean_confidence": 0.08934348673480694,
+    "calibration_bins": [
+      {
+        "range": [
+          0.0,
+          0.1
+        ],
+        "count": 16529,
+        "mean_confidence": 0.015006536507522702,
+        "observed_exact_rate": 0.0122814447334987
+      },
+      {
+        "range": [
+          0.1,
+          0.2
+        ],
+        "count": 671,
+        "mean_confidence": 0.14347876114905644,
+        "observed_exact_rate": 0.07451564828614009
+      },
+      {
+        "range": [
+          0.2,
+          0.3
+        ],
+        "count": 412,
+        "mean_confidence": 0.24535588337046477,
+        "observed_exact_rate": 0.16990291262135923
+      },
+      {
+        "range": [
+          0.3,
+          0.4
+        ],
+        "count": 209,
+        "mean_confidence": 0.3502843233265665,
+        "observed_exact_rate": 0.2822966507177033
+      },
+      {
+        "range": [
+          0.4,
+          0.5
+        ],
+        "count": 249,
+        "mean_confidence": 0.44867687968779846,
+        "observed_exact_rate": 0.3815261044176707
+      },
+      {
+        "range": [
+          0.5,
+          0.6
+        ],
+        "count": 219,
+        "mean_confidence": 0.5503743715239127,
+        "observed_exact_rate": 0.5570776255707762
+      },
+      {
+        "range": [
+          0.6,
+          0.7
+        ],
+        "count": 272,
+        "mean_confidence": 0.6499513061264928,
+        "observed_exact_rate": 0.7426470588235294
+      },
+      {
+        "range": [
+          0.7,
+          0.8
+        ],
+        "count": 287,
+        "mean_confidence": 0.7524489685443432,
+        "observed_exact_rate": 0.8222996515679443
+      },
+      {
+        "range": [
+          0.8,
+          0.9
+        ],
+        "count": 403,
+        "mean_confidence": 0.8493937366482353,
+        "observed_exact_rate": 0.8833746898263027
+      },
+      {
+        "range": [
+          0.9,
+          1.0
+        ],
+        "count": 279,
+        "mean_confidence": 0.9281976423984446,
+        "observed_exact_rate": 0.9247311827956989
+      }
+    ]
+  },
+  "test_by_suite": {
+    "reparos-compositional-4k": {
+      "candidates": 5480,
+      "positive_candidates": 481,
+      "positive_rate": 0.08777372262773722,
+      "brier_score": 0.03933613925964588,
+      "log_loss": 0.14572074067432653,
+      "mean_confidence": 0.08004041356297967,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 4692,
+          "mean_confidence": 0.016020630811239913,
+          "observed_exact_rate": 0.0196078431372549
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 220,
+          "mean_confidence": 0.13955237172714996,
+          "observed_exact_rate": 0.13636363636363635
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 58,
+          "mean_confidence": 0.24566459337278237,
+          "observed_exact_rate": 0.1724137931034483
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 63,
+          "mean_confidence": 0.3575431133283455,
+          "observed_exact_rate": 0.4126984126984127
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 106,
+          "mean_confidence": 0.4504926501440493,
+          "observed_exact_rate": 0.4716981132075472
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 79,
+          "mean_confidence": 0.553231018858435,
+          "observed_exact_rate": 0.620253164556962
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 75,
+          "mean_confidence": 0.6464362712257755,
+          "observed_exact_rate": 0.7466666666666667
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 71,
+          "mean_confidence": 0.7510803985206723,
+          "observed_exact_rate": 0.8450704225352113
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 65,
+          "mean_confidence": 0.8473686093425565,
+          "observed_exact_rate": 0.8923076923076924
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 51,
+          "mean_confidence": 0.9339514230246692,
+          "observed_exact_rate": 0.9803921568627451
+        }
+      ]
+    },
+    "reparos-diagnostic-10k": {
+      "candidates": 13850,
+      "positive_candidates": 1155,
+      "positive_rate": 0.08339350180505416,
+      "brier_score": 0.028652884794189426,
+      "log_loss": 0.11213529734836818,
+      "mean_confidence": 0.08813535260115525,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 12011,
+          "mean_confidence": 0.012941144094996845,
+          "observed_exact_rate": 0.01074015485804679
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 392,
+          "mean_confidence": 0.13995844341279134,
+          "observed_exact_rate": 0.14795918367346939
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 112,
+          "mean_confidence": 0.22938198907488114,
+          "observed_exact_rate": 0.11607142857142858
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 49,
+          "mean_confidence": 0.3643652257167193,
+          "observed_exact_rate": 0.22448979591836735
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 147,
+          "mean_confidence": 0.45533490500568113,
+          "observed_exact_rate": 0.24489795918367346
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 119,
+          "mean_confidence": 0.5515167486335173,
+          "observed_exact_rate": 0.4789915966386555
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 175,
+          "mean_confidence": 0.6510890916518178,
+          "observed_exact_rate": 0.6342857142857142
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 227,
+          "mean_confidence": 0.7521812953977534,
+          "observed_exact_rate": 0.8458149779735683
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 338,
+          "mean_confidence": 0.8534515424673382,
+          "observed_exact_rate": 0.8668639053254438
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 280,
+          "mean_confidence": 0.9325466877683241,
+          "observed_exact_rate": 0.9107142857142857
+        }
+      ]
+    },
+    "reparos-user-centric-v2": {
+      "candidates": 200,
+      "positive_candidates": 15,
+      "positive_rate": 0.075,
+      "brier_score": 0.027277316315116446,
+      "log_loss": 0.08999752604634001,
+      "mean_confidence": 0.06835796664567195,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 174,
+          "mean_confidence": 0.010458563442605167,
+          "observed_exact_rate": 0.005747126436781609
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 7,
+          "mean_confidence": 0.1445872827641325,
+          "observed_exact_rate": 0.2857142857142857
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 2,
+          "mean_confidence": 0.22494832566542067,
+          "observed_exact_rate": 0.0
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 2,
+          "mean_confidence": 0.3565371712699277,
+          "observed_exact_rate": 0.5
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 3,
+          "mean_confidence": 0.43687875198703247,
+          "observed_exact_rate": 0.3333333333333333
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 3,
+          "mean_confidence": 0.5532024830071911,
+          "observed_exact_rate": 0.6666666666666666
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 5,
+          "mean_confidence": 0.6629588026027378,
+          "observed_exact_rate": 0.8
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 1,
+          "mean_confidence": 0.76810512133057,
+          "observed_exact_rate": 1.0
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 2,
+          "mean_confidence": 0.8551300033142542,
+          "observed_exact_rate": 1.0
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 1,
+          "mean_confidence": 0.9133184709460289,
+          "observed_exact_rate": 1.0
+        }
+      ]
+    }
+  },
+  "test_by_rank": {
+    "1": {
+      "candidates": 1953,
+      "positive_candidates": 1321,
+      "positive_rate": 0.6763952892985151,
+      "brier_score": 0.1595347629602175,
+      "log_loss": 0.4898760023993811,
+      "mean_confidence": 0.6826090001680414,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 7,
+          "mean_confidence": 0.06687625399224527,
+          "observed_exact_rate": 0.0
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 22,
+          "mean_confidence": 0.14750008420461988,
+          "observed_exact_rate": 0.045454545454545456
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 62,
+          "mean_confidence": 0.25557723335979915,
+          "observed_exact_rate": 0.06451612903225806
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 114,
+          "mean_confidence": 0.3604577766872358,
+          "observed_exact_rate": 0.3333333333333333
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 256,
+          "mean_confidence": 0.4531136258088494,
+          "observed_exact_rate": 0.33984375
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 201,
+          "mean_confidence": 0.5522156767473954,
+          "observed_exact_rate": 0.5373134328358209
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 255,
+          "mean_confidence": 0.6499533544863333,
+          "observed_exact_rate": 0.6705882352941176
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 299,
+          "mean_confidence": 0.7519731353564828,
+          "observed_exact_rate": 0.8461538461538461
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 405,
+          "mean_confidence": 0.8524835579453209,
+          "observed_exact_rate": 0.8716049382716049
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 332,
+          "mean_confidence": 0.9327045590973944,
+          "observed_exact_rate": 0.9216867469879518
+        }
+      ]
+    },
+    "2": {
+      "candidates": 1953,
+      "positive_candidates": 131,
+      "positive_rate": 0.0670762928827445,
+      "brier_score": 0.05849847735458083,
+      "log_loss": 0.21603958503235365,
+      "mean_confidence": 0.08015828488532527,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1301,
+          "mean_confidence": 0.042207066488446715,
+          "observed_exact_rate": 0.02536510376633359
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 542,
+          "mean_confidence": 0.14224040498992563,
+          "observed_exact_rate": 0.14575645756457564
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 110,
+          "mean_confidence": 0.2231221579548305,
+          "observed_exact_rate": 0.17272727272727273
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "3": {
+      "candidates": 1953,
+      "positive_candidates": 67,
+      "positive_rate": 0.03430619559651818,
+      "brier_score": 0.03191245992363453,
+      "log_loss": 0.13267879818316428,
+      "mean_confidence": 0.026362021722626097,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1916,
+          "mean_confidence": 0.024600300540360526,
+          "observed_exact_rate": 0.031315240083507306
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 37,
+          "mean_confidence": 0.11759061051237853,
+          "observed_exact_rate": 0.1891891891891892
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "4": {
+      "candidates": 1953,
+      "positive_candidates": 37,
+      "positive_rate": 0.01894521249359959,
+      "brier_score": 0.018091021656606778,
+      "log_loss": 0.08602123044748673,
+      "mean_confidence": 0.017926683715986987,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1936,
+          "mean_confidence": 0.01716104939098324,
+          "observed_exact_rate": 0.01756198347107438
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 17,
+          "mean_confidence": 0.10511892213994349,
+          "observed_exact_rate": 0.17647058823529413
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "5": {
+      "candidates": 1953,
+      "positive_candidates": 23,
+      "positive_rate": 0.011776753712237584,
+      "brier_score": 0.011586064768184941,
+      "log_loss": 0.06252549334730119,
+      "mean_confidence": 0.011071215872177959,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1953,
+          "mean_confidence": 0.011071215872177959,
+          "observed_exact_rate": 0.011776753712237584
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "6": {
+      "candidates": 1953,
+      "positive_candidates": 22,
+      "positive_rate": 0.011264720942140297,
+      "brier_score": 0.011143135970656488,
+      "log_loss": 0.06143621277418012,
+      "mean_confidence": 0.010163950758791123,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1953,
+          "mean_confidence": 0.010163950758791123,
+          "observed_exact_rate": 0.011264720942140297
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "7": {
+      "candidates": 1953,
+      "positive_candidates": 22,
+      "positive_rate": 0.011264720942140297,
+      "brier_score": 0.01115193129229913,
+      "log_loss": 0.06386207736534531,
+      "mean_confidence": 0.009283651688813732,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1952,
+          "mean_confidence": 0.009237092619618577,
+          "observed_exact_rate": 0.011270491803278689
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 1,
+          "mean_confidence": 0.10016695475775517,
+          "observed_exact_rate": 0.0
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "8": {
+      "candidates": 1953,
+      "positive_candidates": 11,
+      "positive_rate": 0.0056323604710701485,
+      "brier_score": 0.005653983021146733,
+      "log_loss": 0.037833614496319376,
+      "mean_confidence": 0.007283169411383024,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1953,
+          "mean_confidence": 0.007283169411383024,
+          "observed_exact_rate": 0.0056323604710701485
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "9": {
+      "candidates": 1953,
+      "positive_candidates": 5,
+      "positive_rate": 0.002560163850486431,
+      "brier_score": 0.002634620900045304,
+      "log_loss": 0.020996815387798764,
+      "mean_confidence": 0.006398522446099438,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1953,
+          "mean_confidence": 0.006398522446099438,
+          "observed_exact_rate": 0.002560163850486431
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    },
+    "10": {
+      "candidates": 1953,
+      "positive_candidates": 12,
+      "positive_rate": 0.006144393241167435,
+      "brier_score": 0.006158089416020639,
+      "log_loss": 0.04205481592226413,
+      "mean_confidence": 0.005357781553111898,
+      "calibration_bins": [
+        {
+          "range": [
+            0.0,
+            0.1
+          ],
+          "count": 1953,
+          "mean_confidence": 0.005357781553111898,
+          "observed_exact_rate": 0.006144393241167435
+        },
+        {
+          "range": [
+            0.1,
+            0.2
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.2,
+            0.3
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.3,
+            0.4
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.4,
+            0.5
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.5,
+            0.6
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.6,
+            0.7
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.7,
+            0.8
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.8,
+            0.9
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        },
+        {
+          "range": [
+            0.9,
+            1.0
+          ],
+          "count": 0,
+          "mean_confidence": null,
+          "observed_exact_rate": null
+        }
+      ]
+    }
+  }
+}

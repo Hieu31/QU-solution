@@ -1,0 +1,2845 @@
+{
+  "schema_version": 1,
+  "task": "strict gold-exact candidate confidence, not production correctness",
+  "queries": 14088,
+  "query_splits": {
+    "development": 11021,
+    "final_test": 3067
+  },
+  "split": "by normalized expected text; five grouped CV folds within development",
+  "seed": 7193,
+  "variants": {
+    "rank_prior": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.0850526604396264,
+        "all": {
+          "brier": 0.04019290240822996,
+          "log_loss": 0.14592743709862463,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.0850526604396264,
+          "ece10": 9.115354050566148e-05,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.2238745438649768,
+          "log_loss": 0.639990827254313,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.662444772495785,
+          "ece10": 0.00010853482659944902,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.019783831135258088,
+          "log_loss": 0.09103150485910369,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.020897981322275418,
+          "ece10": 8.922228649524064e-05,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08505851401614804,
+        "all": {
+          "brier": 0.03870174159862215,
+          "log_loss": 0.13900152701969556,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08505851401614804,
+          "ece10": 0.0023744229135150736,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.21870664305756451,
+          "log_loss": 0.6292212338766376,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6625238138437811,
+          "ece10": 0.0150112366942039,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.018701196992073003,
+          "log_loss": 0.08453267070225758,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.020895702924188818,
+          "ece10": 0.0009703324934385374,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08505851401614806,
+          "all": {
+            "brier": 0.04549127866246849,
+            "log_loss": 0.16182409924550314,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08505851401614806,
+            "ece10": 0.00976508933231831,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.24304557418052755,
+            "log_loss": 0.6797310847757057,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.662523813843781,
+            "ece10": 0.05986680901286312,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.023540801382684155,
+            "log_loss": 0.10427887863103619,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.020895702924188818,
+            "ece10": 0.004198231590035552,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08505851401614804,
+          "all": {
+            "brier": 0.03613147685686186,
+            "log_loss": 0.1304730220538141,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08505851401614804,
+            "ece10": 0.007001190600491541,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.20938934446498433,
+            "log_loss": 0.6098853246571356,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6625238138437812,
+            "ece10": 0.043675647072660806,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.016880602678181585,
+            "log_loss": 0.0772049884312228,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.020895702924188818,
+            "ece10": 0.0029262509924727342,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08505851401614804,
+          "all": {
+            "brier": 0.04636886669813313,
+            "log_loss": 0.1457217001799703,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08505851401614804,
+            "ece10": 0.01667701798337742,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.26391215823219105,
+            "log_loss": 0.7230348783522447,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.6625238138437812,
+            "ece10": 0.12406227538224279,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.02219738986101558,
+            "log_loss": 0.08157579149416207,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.020895702924188818,
+            "ece10": 0.004745322716836822,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "score_only": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08496302868020046,
+        "all": {
+          "brier": 0.039578495021430064,
+          "log_loss": 0.1466283699266268,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08496302868020046,
+          "ece10": 0.02934433342652675,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.21014528823665427,
+          "log_loss": 0.612120842572949,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.5497005079060446,
+          "ece10": 0.18079238669132913,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.02062662910862738,
+          "log_loss": 0.09490698407703548,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.03332553098844,
+          "ece10": 0.012516771952659822,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08888585559667883,
+        "all": {
+          "brier": 0.038655720229268234,
+          "log_loss": 0.14065169883296383,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08888585559667883,
+          "ece10": 0.035014888283186274,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.21424174605937357,
+          "log_loss": 0.6206055245022701,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.5456510817688134,
+          "ece10": 0.1862697425106401,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.019146161803700965,
+          "log_loss": 0.08732349598081869,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.038134163799775016,
+          "ece10": 0.021112131096837072,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.09464806212240165,
+          "all": {
+            "brier": 0.04464310175949037,
+            "log_loss": 0.1651598459148034,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.09464806212240165,
+            "ece10": 0.030329712364802433,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.2216248251571055,
+            "log_loss": 0.6356193195952814,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.5412021951293845,
+            "ece10": 0.12386410818141175,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.024978465826422023,
+            "log_loss": 0.11288657106141702,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.04503093623273688,
+            "ece10": 0.019937001718512506,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08681509267935328,
+          "all": {
+            "brier": 0.036434112936721566,
+            "log_loss": 0.1316861197516809,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08681509267935328,
+            "ece10": 0.03694860449622665,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.21144911991564186,
+            "log_loss": 0.6149793761670187,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.54743707305051,
+            "ece10": 0.2104972586046885,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.01698800105017486,
+            "log_loss": 0.07798686903886559,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.035634872638113636,
+            "ece10": 0.022106760916207106,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07645595180192767,
+          "all": {
+            "brier": 0.03771309916657232,
+            "log_loss": 0.11485425661547108,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07645595180192767,
+            "ece10": 0.0199355846813223,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.22217992321513041,
+            "log_loss": 0.6277119750604803,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5231942774911339,
+            "ece10": 0.027190143752959212,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.01721678538339919,
+            "log_loss": 0.057870065677136755,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.026818360058682537,
+            "ece10": 0.01912952256225153,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "rank_only": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08495836101954368,
+        "all": {
+          "brier": 0.04019472337380532,
+          "log_loss": 0.1459417981197815,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08495836101954368,
+          "ece10": 0.000778473010649278,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.2238887770021354,
+          "log_loss": 0.6400185747389979,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6585366780446534,
+          "ece10": 0.004016629277731054,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.019784272970657532,
+          "log_loss": 0.09104437849542411,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02122743690564259,
+          "ece10": 0.000418677869862414,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08498321386969539,
+        "all": {
+          "brier": 0.038720189488186084,
+          "log_loss": 0.1391237365071821,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08498321386969539,
+          "ece10": 0.003081994585436157,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.21883948400633288,
+          "log_loss": 0.6295174356205201,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6586094547519125,
+          "ece10": 0.018925595786072558,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.018706934541725326,
+          "log_loss": 0.08463554771681119,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.021246964882782392,
+          "ece10": 0.001321594452032112,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08498321386969539,
+          "all": {
+            "brier": 0.045451405486455376,
+            "log_loss": 0.1616445007588866,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08498321386969539,
+            "ece10": 0.009057517660397224,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.24259221601130626,
+            "log_loss": 0.6787200697460575,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.6586094547519123,
+            "ece10": 0.05595244992099446,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.023546870983694162,
+            "log_loss": 0.10419165976031206,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.021246964882782396,
+            "ece10": 0.003846969631441974,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08498321386969539,
+          "all": {
+            "brier": 0.03617202764501951,
+            "log_loss": 0.13070544651116237,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08498321386969539,
+            "ece10": 0.007708762272412635,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.20974659100450863,
+            "log_loss": 0.6106819480893282,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6586094547519125,
+            "ece10": 0.047590006164529575,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.016885965049520727,
+            "log_loss": 0.07737472411358835,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.021246964882782392,
+            "ece10": 0.003277512951066309,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08498321386969539,
+          "all": {
+            "brier": 0.04631722151294091,
+            "log_loss": 0.14619456194784108,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08498321386969539,
+            "ece10": 0.015969446311456338,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.26295623184809025,
+            "log_loss": 0.7209031424273028,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.6586094547519126,
+            "ece10": 0.12014791629037413,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.022246220364590976,
+            "log_loss": 0.08233805300567867,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.021246964882782392,
+            "ece10": 0.004394060758243248,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "score_rank": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08495812435610087,
+        "all": {
+          "brier": 0.03829613324806864,
+          "log_loss": 0.136853514976481,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08495812435610087,
+          "ece10": 0.005551974474375198,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.21172293314416152,
+          "log_loss": 0.6136069932645468,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6602060378258888,
+          "ece10": 0.04912940773146779,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.01902648881516943,
+          "log_loss": 0.08388090627780698,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.021041689526124445,
+          "ece10": 0.0007135711620871629,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08670912456182313,
+        "all": {
+          "brier": 0.03674536181896854,
+          "log_loss": 0.1299149231023518,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08670912456182313,
+          "ece10": 0.012985051196901175,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.2088853095478328,
+          "log_loss": 0.607862886083943,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6588560909615665,
+          "ece10": 0.04779424910142199,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.01761870096020585,
+          "log_loss": 0.07680959388217501,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.023137239406296105,
+          "ece10": 0.009117362540843305,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.09005312980398099,
+          "all": {
+            "brier": 0.04376858585177181,
+            "log_loss": 0.15495112754593487,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.09005312980398099,
+            "ece10": 0.009386570878141303,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.2326091306328437,
+            "log_loss": 0.6570915625224055,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.6571659414499283,
+            "ece10": 0.05450893661901072,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.02278630309831938,
+            "log_loss": 0.09915774588188257,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.027040595176653488,
+            "ece10": 0.004372974684711366,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08549184425295,
+          "all": {
+            "brier": 0.034107219307809356,
+            "log_loss": 0.12063041291370992,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08549184425295,
+            "ece10": 0.017201465185965645,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.1998804227885212,
+            "log_loss": 0.5891712778480412,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6595777895234662,
+            "ece10": 0.07050874735296324,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.015687974476619154,
+            "log_loss": 0.06857031680989532,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.02170451700067043,
+            "ece10": 0.011278433834077024,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08215755741143005,
+          "all": {
+            "brier": 0.04115118725583363,
+            "log_loss": 0.12509510776620128,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08215755741143005,
+            "ece10": 0.04119053624519662,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.23977408399696312,
+            "log_loss": 0.6729533354739561,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.6429286137959781,
+            "ece10": 0.10446707533443955,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.019081976506819254,
+            "log_loss": 0.0642219713542285,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.019849662257591383,
+            "ece10": 0.03415980967972518,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "score_rank_gap": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08496975689417258,
+        "all": {
+          "brier": 0.038081429051934894,
+          "log_loss": 0.13631662729511507,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08496975689417258,
+          "ece10": 0.006980644590479581,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.20970511649031903,
+          "log_loss": 0.6092992448430121,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6602436947895713,
+          "ece10": 0.06152562018842405,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.019012130447669983,
+          "log_loss": 0.08376300312312653,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02105043046135049,
+          "ece10": 0.0009226328945398628,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.0866639122069609,
+        "all": {
+          "brier": 0.036587601269569794,
+          "log_loss": 0.12955956539357427,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.0866639122069609,
+          "ece10": 0.011980512233061085,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "top1": {
+          "brier": 0.20722422390435075,
+          "log_loss": 0.6043091136777002,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6585775663356033,
+          "ece10": 0.058174368853576075,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        },
+        "rank2to10": {
+          "brier": 0.017627976532371914,
+          "log_loss": 0.07680961558422697,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.023117950637111744,
+          "ece10": 0.006847861497448309,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08997432406354545,
+          "all": {
+            "brier": 0.043597583743053246,
+            "log_loss": 0.1545607971736222,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08997432406354545,
+            "ece10": 0.009523455741886747,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.2308830445260761,
+            "log_loss": 0.6534410995284814,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.6565765977892422,
+            "ece10": 0.053919592958324325,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.02278808810049514,
+            "log_loss": 0.09912965246752672,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.027018515871801374,
+            "ece10": 0.004590551606727015,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08546167243685326,
+          "all": {
+            "brier": 0.03395517077284854,
+            "log_loss": 0.12029049689224171,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08546167243685326,
+            "ece10": 0.014513296090802489,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.198249704832266,
+            "log_loss": 0.5856675185131078,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6594302763669313,
+            "ece10": 0.07737645532263894,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.015700222544024377,
+            "log_loss": 0.06858193893436773,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.021687383111289045,
+            "ece10": 0.007528500620598439,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08167658228446373,
+          "all": {
+            "brier": 0.04085873955089445,
+            "log_loss": 0.12432314770793138,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08167658228446373,
+            "ece10": 0.04082251305138751,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.23705314541758302,
+            "log_loss": 0.6669942330574107,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.6400136760779567,
+            "ece10": 0.10155213761641825,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.01905936112126239,
+            "log_loss": 0.06402636044687811,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.019639127418520055,
+            "ece10": 0.03407477698860631,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "score_rank_margin": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08495124013703159,
+        "all": {
+          "brier": 0.033524455306935146,
+          "log_loss": 0.1263584490411708,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08495124013703159,
+          "ece10": 0.007910919183804169,
+          "confidence_ge_0_8_count": 3573,
+          "confidence_ge_0_8_observed_rate": 0.9042821158690176
+        },
+        "top1": {
+          "brier": 0.16364432885785637,
+          "log_loss": 0.5019538471448817,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6611716978840609,
+          "ece10": 0.06039120721456054,
+          "confidence_ge_0_8_count": 3573,
+          "confidence_ge_0_8_observed_rate": 0.9042821158690176
+        },
+        "rank2to10": {
+          "brier": 0.019066691579055006,
+          "log_loss": 0.08462562702964739,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.020926744831806104,
+          "ece10": 0.0021473226431258877,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08405355995992118,
+        "all": {
+          "brier": 0.0341178208698492,
+          "log_loss": 0.12464665463877021,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08405355995992118,
+          "ece10": 0.016206115201242165,
+          "confidence_ge_0_8_count": 857,
+          "confidence_ge_0_8_observed_rate": 0.868144690781797
+        },
+        "top1": {
+          "brier": 0.18087899787104222,
+          "log_loss": 0.5465567366467872,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6378792908078497,
+          "ece10": 0.09085078116389453,
+          "confidence_ge_0_8_count": 857,
+          "confidence_ge_0_8_observed_rate": 0.868144690781797
+        },
+        "rank2to10": {
+          "brier": 0.017811023425272188,
+          "log_loss": 0.07776775663787944,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.022517367643484675,
+          "ece10": 0.007969905773863091,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08306088405748782,
+          "all": {
+            "brier": 0.04033673802431577,
+            "log_loss": 0.1487235989694992,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08306088405748782,
+            "ece10": 0.00944710495804754,
+            "confidence_ge_0_8_count": 135,
+            "confidence_ge_0_8_observed_rate": 0.8592592592592593
+          },
+          "top1": {
+            "brier": 0.19727466404687086,
+            "log_loss": 0.579473636794535,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.596630841185121,
+            "ece10": 0.0469647741825325,
+            "confidence_ge_0_8_count": 135,
+            "confidence_ge_0_8_observed_rate": 0.8592592592592593
+          },
+          "rank2to10": {
+            "brier": 0.022899190688476314,
+            "log_loss": 0.10086248365560634,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.025997555487750793,
+            "ece10": 0.005278475044215877,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08444219670003648,
+          "all": {
+            "brier": 0.03178080027198694,
+            "log_loss": 0.11572517405901439,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08444219670003648,
+            "ece10": 0.01927073669271363,
+            "confidence_ge_0_8_count": 719,
+            "confidence_ge_0_8_observed_rate": 0.8692628650904033
+          },
+          "top1": {
+            "brier": 0.17463168855696365,
+            "log_loss": 0.5340389520649568,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6532529000568531,
+            "ece10": 0.11399628835257918,
+            "confidence_ge_0_8_count": 719,
+            "confidence_ge_0_8_observed_rate": 0.8692628650904033
+          },
+          "rank2to10": {
+            "brier": 0.015908479351433972,
+            "log_loss": 0.06924586539168748,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.021241007438167966,
+            "ece10": 0.008812749253958347,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08073281101516458,
+          "all": {
+            "brier": 0.03819047063469926,
+            "log_loss": 0.11876249038437085,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08073281101516458,
+            "ece10": 0.05504231366534892,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 1.0
+          },
+          "top1": {
+            "brier": 0.206332762452025,
+            "log_loss": 0.5934332871713114,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.632653298449215,
+            "ece10": 0.2537961785018163,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 1.0
+          },
+          "rank2to10": {
+            "brier": 0.019507993766107522,
+            "log_loss": 0.06602129074137748,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.019408312411381187,
+            "ece10": 0.035072602501235534,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "score_rank_gap_margin": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08495710009643785,
+        "all": {
+          "brier": 0.033564878039936845,
+          "log_loss": 0.12662421066507598,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08495710009643785,
+          "ece10": 0.007727029951612093,
+          "confidence_ge_0_8_count": 3650,
+          "confidence_ge_0_8_observed_rate": 0.9038356164383562
+        },
+        "top1": {
+          "brier": 0.16392708469758693,
+          "log_loss": 0.5027266005951405,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6612740418001901,
+          "ece10": 0.06029768351912268,
+          "confidence_ge_0_8_count": 3650,
+          "confidence_ge_0_8_observed_rate": 0.9038356164383562
+        },
+        "rank2to10": {
+          "brier": 0.019080188411309065,
+          "log_loss": 0.08483505622840216,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.020921884351576492,
+          "ece10": 0.0019257375284505484,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08398111876707763,
+        "all": {
+          "brier": 0.03419277621067576,
+          "log_loss": 0.12492199272229325,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08398111876707763,
+          "ece10": 0.016149686970876306,
+          "confidence_ge_0_8_count": 871,
+          "confidence_ge_0_8_observed_rate": 0.8668197474167624
+        },
+        "top1": {
+          "brier": 0.18185779912204592,
+          "log_loss": 0.5496430747415589,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6369909385949767,
+          "ece10": 0.09511873638911628,
+          "confidence_ge_0_8_count": 871,
+          "confidence_ge_0_8_observed_rate": 0.8668197474167624
+        },
+        "rank2to10": {
+          "brier": 0.017785551442745753,
+          "log_loss": 0.07773076138681928,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.0225355832306444,
+          "ece10": 0.0074162018865522525,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08277114491818502,
+          "all": {
+            "brier": 0.0403840356859785,
+            "log_loss": 0.14894314346959767,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08277114491818502,
+            "ece10": 0.009647268343310448,
+            "confidence_ge_0_8_count": 139,
+            "confidence_ge_0_8_observed_rate": 0.8561151079136691
+          },
+          "top1": {
+            "brier": 0.19790835761110626,
+            "log_loss": 0.5809573271313025,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.5936665098029666,
+            "ece10": 0.052131221599714554,
+            "confidence_ge_0_8_count": 139,
+            "confidence_ge_0_8_observed_rate": 0.8561151079136691
+          },
+          "rank2to10": {
+            "brier": 0.0228813332498532,
+            "log_loss": 0.10094156750718597,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.026004993264320368,
+            "ece10": 0.004926829092598881,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08444626003307767,
+          "all": {
+            "brier": 0.031866772259529115,
+            "log_loss": 0.11602106412120722,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08444626003307767,
+            "ece10": 0.019097271361219758,
+            "confidence_ge_0_8_count": 729,
+            "confidence_ge_0_8_observed_rate": 0.8683127572016461
+          },
+          "top1": {
+            "brier": 0.1757483018327187,
+            "log_loss": 0.5377346622658625,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6531090710731456,
+            "ece10": 0.11770506713093638,
+            "confidence_ge_0_8_count": 729,
+            "confidence_ge_0_8_observed_rate": 0.8683127572016461
+          },
+          "rank2to10": {
+            "brier": 0.015879935640285836,
+            "log_loss": 0.06916399766068994,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.02126150325084789,
+            "ece10": 0.008179953365376335,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.08140064867223075,
+          "all": {
+            "brier": 0.038140618495427936,
+            "log_loss": 0.11907231943379076,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.08140064867223075,
+            "ece10": 0.05455025957940316,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 1.0
+          },
+          "top1": {
+            "brier": 0.20569460966823952,
+            "log_loss": 0.5942527049102037,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.6365035650088211,
+            "ece10": 0.25525463994614306,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 1.0
+          },
+          "rank2to10": {
+            "brier": 0.019523508365115537,
+            "log_loss": 0.06627449882530047,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.019722546857054036,
+            "ece10": 0.035192346619705876,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_without_margin": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08493649069981216,
+        "all": {
+          "brier": 0.0371025233447896,
+          "log_loss": 0.13241108284235273,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08493649069981216,
+          "ece10": 0.006455591065400619,
+          "confidence_ge_0_8_count": 139,
+          "confidence_ge_0_8_observed_rate": 0.3237410071942446
+        },
+        "top1": {
+          "brier": 0.20217266353608174,
+          "log_loss": 0.5922451982343917,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6601902399554371,
+          "ece10": 0.04310365103273263,
+          "confidence_ge_0_8_count": 139,
+          "confidence_ge_0_8_observed_rate": 0.3237410071942446
+        },
+        "rank2to10": {
+          "brier": 0.018761396656868254,
+          "log_loss": 0.0813184033543484,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.021019407449187157,
+          "ece10": 0.0026472725707677434,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08693268678184814,
+        "all": {
+          "brier": 0.03541061548470057,
+          "log_loss": 0.12579035322470739,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08693268678184814,
+          "ece10": 0.01058895102132692,
+          "confidence_ge_0_8_count": 14,
+          "confidence_ge_0_8_observed_rate": 0.8571428571428571
+        },
+        "top1": {
+          "brier": 0.1986077848364052,
+          "log_loss": 0.584334395162214,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.658152037207431,
+          "ece10": 0.03663082791714148,
+          "confidence_ge_0_8_count": 14,
+          "confidence_ge_0_8_observed_rate": 0.8571428571428571
+        },
+        "rank2to10": {
+          "brier": 0.017277596667844508,
+          "log_loss": 0.0748410152316511,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.02346387006789449,
+          "ece10": 0.007738416795360145,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08271545176612298,
+          "all": {
+            "brier": 0.04125950225474851,
+            "log_loss": 0.14834189508163956,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08271545176612298,
+            "ece10": 0.0076283718556429,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "top1": {
+            "brier": 0.20658236586875095,
+            "log_loss": 0.5998262984826018,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.6139858319734582,
+            "ece10": 0.06735494906630132,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          },
+          "rank2to10": {
+            "brier": 0.02289029518652602,
+            "log_loss": 0.09817696137042153,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.023685409520863485,
+            "ece10": 0.0014085249933608814,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.088603352952068,
+          "all": {
+            "brier": 0.033132233460511286,
+            "log_loss": 0.11720630908910873,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.088603352952068,
+            "ece10": 0.014691310293327634,
+            "confidence_ge_0_8_count": 13,
+            "confidence_ge_0_8_observed_rate": 0.9230769230769231
+          },
+          "top1": {
+            "brier": 0.1947290200866522,
+            "log_loss": 0.5761033061685614,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6752951082514238,
+            "ece10": 0.04612813797417319,
+            "confidence_ge_0_8_count": 13,
+            "confidence_ge_0_8_observed_rate": 0.9230769230769231
+          },
+          "rank2to10": {
+            "brier": 0.015177034946495633,
+            "log_loss": 0.06621775385805842,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.023415380141028452,
+            "ece10": 0.011212528821338153,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.0694686635596208,
+          "all": {
+            "brier": 0.0530106262728282,
+            "log_loss": 0.1592830907864584,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.0694686635596208,
+            "ece10": 0.041900775658268524,
+            "confidence_ge_0_8_count": 1,
+            "confidence_ge_0_8_observed_rate": 0.0
+          },
+          "top1": {
+            "brier": 0.3548521877723931,
+            "log_loss": 1.0070350221306408,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.535778328730608,
+            "ece10": 0.34714683267905433,
+            "confidence_ge_0_8_count": 1,
+            "confidence_ge_0_8_observed_rate": 0.0
+          },
+          "rank2to10": {
+            "brier": 0.01947267499509877,
+            "log_loss": 0.06508843174821591,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.01765647854062221,
+            "ece10": 0.0170773248368193,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_with_margin": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08490713682099474,
+        "all": {
+          "brier": 0.03309199396433249,
+          "log_loss": 0.12334974627502544,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08490713682099474,
+          "ece10": 0.00565639982497366,
+          "confidence_ge_0_8_count": 3914,
+          "confidence_ge_0_8_observed_rate": 0.9041900868676546
+        },
+        "top1": {
+          "brier": 0.16160342684471105,
+          "log_loss": 0.491533635655857,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6611137532175655,
+          "ece10": 0.03733084983090675,
+          "confidence_ge_0_8_count": 3914,
+          "confidence_ge_0_8_observed_rate": 0.9041900868676546
+        },
+        "rank2to10": {
+          "brier": 0.01881294586651265,
+          "log_loss": 0.08244042523271082,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02088417944359802,
+          "ece10": 0.0032822122798827425,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08493194704653392,
+        "all": {
+          "brier": 0.033185886607679876,
+          "log_loss": 0.1209034907655747,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08493194704653392,
+          "ece10": 0.01110802201092337,
+          "confidence_ge_0_8_count": 894,
+          "confidence_ge_0_8_observed_rate": 0.8948545861297539
+        },
+        "top1": {
+          "brier": 0.17491061814795733,
+          "log_loss": 0.5263896509304032,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6408944463124362,
+          "ece10": 0.056636226118886225,
+          "confidence_ge_0_8_count": 894,
+          "confidence_ge_0_8_observed_rate": 0.8948545861297539
+        },
+        "rank2to10": {
+          "brier": 0.01743869421431571,
+          "log_loss": 0.07584947296948265,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.023158336016989235,
+          "ece10": 0.007442786670617152,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.07874731134290684,
+          "all": {
+            "brier": 0.03891810027027885,
+            "log_loss": 0.143686900385,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.07874731134290684,
+            "ece10": 0.006558476877030155,
+            "confidence_ge_0_8_count": 146,
+            "confidence_ge_0_8_observed_rate": 0.952054794520548
+          },
+          "top1": {
+            "brier": 0.18303781171388442,
+            "log_loss": 0.5408240689370116,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.572797512285907,
+            "ece10": 0.04683495531537256,
+            "confidence_ge_0_8_count": 146,
+            "confidence_ge_0_8_observed_rate": 0.952054794520548
+          },
+          "rank2to10": {
+            "brier": 0.022904798998767118,
+            "log_loss": 0.0995605483236654,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.023852844571462382,
+            "ece10": 0.002197332388720422,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08730454754862445,
+          "all": {
+            "brier": 0.030972108126086462,
+            "log_loss": 0.11228494423212666,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08730454754862445,
+            "ece10": 0.015239803059828451,
+            "confidence_ge_0_8_count": 745,
+            "confidence_ge_0_8_observed_rate": 0.8859060402684564
+          },
+          "top1": {
+            "brier": 0.17119950402126313,
+            "log_loss": 0.5190972718455286,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6666695866479759,
+            "ece10": 0.06934335769113958,
+            "confidence_ge_0_8_count": 745,
+            "confidence_ge_0_8_observed_rate": 0.8859060402684564
+          },
+          "rank2to10": {
+            "brier": 0.015391286359955727,
+            "log_loss": 0.06708357449730423,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.02293065431536318,
+            "ece10": 0.01083355254030188,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07258345819651135,
+          "all": {
+            "brier": 0.04715496256114037,
+            "log_loss": 0.1455359075787415,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07258345819651135,
+            "ece10": 0.05055147244741082,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 0.3333333333333333
+          },
+          "top1": {
+            "brier": 0.2927278314890222,
+            "log_loss": 0.8557079381195702,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5646482145474075,
+            "ece10": 0.43593186112258353,
+            "confidence_ge_0_8_count": 3,
+            "confidence_ge_0_8_observed_rate": 0.3333333333333333
+          },
+          "rank2to10": {
+            "brier": 0.01986908823582018,
+            "log_loss": 0.0666279041853161,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.017909596379745128,
+            "ece10": 0.01810934807774492,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_plus_local_gap": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08488479030788797,
+        "all": {
+          "brier": 0.03266381591539691,
+          "log_loss": 0.12111623569280562,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08488479030788797,
+          "ece10": 0.0033341705665212063,
+          "confidence_ge_0_8_count": 4278,
+          "confidence_ge_0_8_observed_rate": 0.9001870032725573
+        },
+        "top1": {
+          "brier": 0.1600293398161625,
+          "log_loss": 0.48834834576380715,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6607840722681847,
+          "ece10": 0.027271762079111646,
+          "confidence_ge_0_8_count": 4276,
+          "confidence_ge_0_8_observed_rate": 0.9003741814780168
+        },
+        "rank2to10": {
+          "brier": 0.018512091037534067,
+          "log_loss": 0.08031266790713877,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02089598120118833,
+          "ece10": 0.0011199907104841188,
+          "confidence_ge_0_8_count": 2,
+          "confidence_ge_0_8_observed_rate": 0.5
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08463600939025791,
+        "all": {
+          "brier": 0.033221697633184256,
+          "log_loss": 0.12093309536748019,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08463600939025791,
+          "ece10": 0.012785904352994606,
+          "confidence_ge_0_8_count": 1006,
+          "confidence_ge_0_8_observed_rate": 0.8886679920477137
+        },
+        "top1": {
+          "brier": 0.17676750334727262,
+          "log_loss": 0.5331927411679445,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6369536839078769,
+          "ece10": 0.07987295665604754,
+          "confidence_ge_0_8_count": 1006,
+          "confidence_ge_0_8_observed_rate": 0.8886679920477137
+        },
+        "rank2to10": {
+          "brier": 0.017272163664952215,
+          "log_loss": 0.07512646805631752,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.02326737888830025,
+          "ece10": 0.00723843196932406,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.07841531492641353,
+          "all": {
+            "brier": 0.03937719420154081,
+            "log_loss": 0.14356614627837802,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.07841531492641353,
+            "ece10": 0.005929992232391114,
+            "confidence_ge_0_8_count": 172,
+            "confidence_ge_0_8_observed_rate": 0.9302325581395349
+          },
+          "top1": {
+            "brier": 0.1843800810049063,
+            "log_loss": 0.5423915185988977,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.5688130732175579,
+            "ece10": 0.04814331936003327,
+            "confidence_ge_0_8_count": 172,
+            "confidence_ge_0_8_observed_rate": 0.9302325581395349
+          },
+          "rank2to10": {
+            "brier": 0.023265762334500197,
+            "log_loss": 0.09925221602054246,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.023926675116286367,
+            "ece10": 0.0034894572022485,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08701131444765081,
+          "all": {
+            "brier": 0.030868732894252595,
+            "log_loss": 0.11243406090745252,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08701131444765081,
+            "ece10": 0.01805647804147752,
+            "confidence_ge_0_8_count": 830,
+            "confidence_ge_0_8_observed_rate": 0.8819277108433735
+          },
+          "top1": {
+            "brier": 0.17332014878397622,
+            "log_loss": 0.5280209022339054,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6626407717351537,
+            "ece10": 0.09917971276693205,
+            "confidence_ge_0_8_count": 830,
+            "confidence_ge_0_8_observed_rate": 0.8819277108433735
+          },
+          "rank2to10": {
+            "brier": 0.015040797795394419,
+            "log_loss": 0.0662577452045133,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.023052485860150487,
+            "ece10": 0.010926811457013472,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07412108310614708,
+          "all": {
+            "brier": 0.044063878422618816,
+            "log_loss": 0.13467806104427008,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07412108310614708,
+            "ece10": 0.06105712446534197,
+            "confidence_ge_0_8_count": 4,
+            "confidence_ge_0_8_observed_rate": 0.5
+          },
+          "top1": {
+            "brier": 0.28219803853013065,
+            "log_loss": 0.8328793376557594,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5785666183744707,
+            "ece10": 0.34368044399695036,
+            "confidence_ge_0_8_count": 4,
+            "confidence_ge_0_8_observed_rate": 0.5
+          },
+          "rank2to10": {
+            "brier": 0.01760452729956194,
+            "log_loss": 0.057100141420771244,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.018071579187444464,
+            "ece10": 0.029654533406274372,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_plus_nonlinear": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08490686084943404,
+        "all": {
+          "brier": 0.032958825340385016,
+          "log_loss": 0.1230999833988951,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08490686084943404,
+          "ece10": 0.005039986961150314,
+          "confidence_ge_0_8_count": 4207,
+          "confidence_ge_0_8_observed_rate": 0.9034941763727121
+        },
+        "top1": {
+          "brier": 0.160114781414957,
+          "log_loss": 0.48779629195151913,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6616948534949698,
+          "ece10": 0.03198593065955971,
+          "confidence_ge_0_8_count": 4207,
+          "confidence_ge_0_8_observed_rate": 0.9034941763727121
+        },
+        "rank2to10": {
+          "brier": 0.018830385776543678,
+          "log_loss": 0.08257817133749241,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.020819306111041172,
+          "ece10": 0.002331514329019552,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08480946242349932,
+        "all": {
+          "brier": 0.0327932498476407,
+          "log_loss": 0.11977286908652623,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08480946242349932,
+          "ece10": 0.01134053123782373,
+          "confidence_ge_0_8_count": 1021,
+          "confidence_ge_0_8_observed_rate": 0.9040156709108716
+        },
+        "top1": {
+          "brier": 0.17186952354401466,
+          "log_loss": 0.5174146789667986,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6399021181002562,
+          "ece10": 0.0600922120792845,
+          "confidence_ge_0_8_count": 1021,
+          "confidence_ge_0_8_observed_rate": 0.9040156709108716
+        },
+        "rank2to10": {
+          "brier": 0.01734033054804359,
+          "log_loss": 0.07559044576649596,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.023132500681637427,
+          "ece10": 0.0069281673503983525,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.07882116067622134,
+          "all": {
+            "brier": 0.03878003785116069,
+            "log_loss": 0.1435795125168659,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.07882116067622134,
+            "ece10": 0.004501985851394535,
+            "confidence_ge_0_8_count": 166,
+            "confidence_ge_0_8_observed_rate": 0.9397590361445783
+          },
+          "top1": {
+            "brier": 0.1817361402108836,
+            "log_loss": 0.5377401249300022,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.5744216423138766,
+            "ece10": 0.03040297227510771,
+            "confidence_ge_0_8_count": 166,
+            "confidence_ge_0_8_observed_rate": 0.9397590361445783
+          },
+          "rank2to10": {
+            "brier": 0.022896026477858135,
+            "log_loss": 0.09978388891540634,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.023754440494259645,
+            "ece10": 0.0016971166811659952,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08710838585896327,
+          "all": {
+            "brier": 0.030479897548043942,
+            "log_loss": 0.11076377960045328,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08710838585896327,
+            "ece10": 0.015997316905133226,
+            "confidence_ge_0_8_count": 851,
+            "confidence_ge_0_8_observed_rate": 0.8989424206815512
+          },
+          "top1": {
+            "brier": 0.16745820502248934,
+            "log_loss": 0.5077985066835762,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6646847048931558,
+            "ece10": 0.07971673116032676,
+            "confidence_ge_0_8_count": 851,
+            "confidence_ge_0_8_observed_rate": 0.8989424206815512
+          },
+          "rank2to10": {
+            "brier": 0.015260085606438894,
+            "log_loss": 0.06664880992455074,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.02293323929960854,
+            "ece10": 0.010223685098204911,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07257179160837579,
+          "all": {
+            "brier": 0.04759800000055141,
+            "log_loss": 0.1461061333693804,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07257179160837579,
+            "ece10": 0.047913208936895844,
+            "confidence_ge_0_8_count": 4,
+            "confidence_ge_0_8_observed_rate": 0.5
+          },
+          "top1": {
+            "brier": 0.29879540267846233,
+            "log_loss": 0.8694246978068522,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5669633296485579,
+            "ece10": 0.40711744503492775,
+            "confidence_ge_0_8_count": 4,
+            "confidence_ge_0_8_observed_rate": 0.5
+          },
+          "rank2to10": {
+            "brier": 0.019687177480783538,
+            "log_loss": 0.06573740398743907,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.017639398492800017,
+            "ece10": 0.017242459335436982,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_plus_accent_fold": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08491860226952719,
+        "all": {
+          "brier": 0.031968253093836,
+          "log_loss": 0.11847182417960436,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08491860226952719,
+          "ece10": 0.004728360230503211,
+          "confidence_ge_0_8_count": 4077,
+          "confidence_ge_0_8_observed_rate": 0.9350012263919548
+        },
+        "top1": {
+          "brier": 0.15315615688635378,
+          "log_loss": 0.4677208558727152,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.661341270714724,
+          "ece10": 0.03949304239117163,
+          "confidence_ge_0_8_count": 4077,
+          "confidence_ge_0_8_observed_rate": 0.9350012263919548
+        },
+        "rank2to10": {
+          "brier": 0.018502930450222912,
+          "log_loss": 0.07966637621370315,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02087163910894973,
+          "ece10": 0.0015079991235284,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08590218905683174,
+        "all": {
+          "brier": 0.03228562855597731,
+          "log_loss": 0.11666394663647718,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08590218905683174,
+          "ece10": 0.011690963648268483,
+          "confidence_ge_0_8_count": 967,
+          "confidence_ge_0_8_observed_rate": 0.9120992761116856
+        },
+        "top1": {
+          "brier": 0.1703077693354263,
+          "log_loss": 0.5128500367995376,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6443105166864521,
+          "ece10": 0.06696661386000875,
+          "confidence_ge_0_8_count": 967,
+          "confidence_ge_0_8_observed_rate": 0.9120992761116856
+        },
+        "rank2to10": {
+          "brier": 0.01694983513603853,
+          "log_loss": 0.0726432699516927,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.023856819320207254,
+          "ece10": 0.007566948468022864,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.0860269025578899,
+          "all": {
+            "brier": 0.03628584927821405,
+            "log_loss": 0.13414925006082584,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.0860269025578899,
+            "ece10": 0.008316110372358868,
+            "confidence_ge_0_8_count": 190,
+            "confidence_ge_0_8_observed_rate": 0.9368421052631579
+          },
+          "top1": {
+            "brier": 0.16282741100473674,
+            "log_loss": 0.49253130524184097,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.611268804928448,
+            "ece10": 0.053530170304622864,
+            "confidence_ge_0_8_count": 190,
+            "confidence_ge_0_8_observed_rate": 0.9368421052631579
+          },
+          "rank2to10": {
+            "brier": 0.022225675753044863,
+            "log_loss": 0.09432902170737971,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.027666691183383434,
+            "ece10": 0.005430645118027373,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08593035016740978,
+          "all": {
+            "brier": 0.03068655823295732,
+            "log_loss": 0.10983922663656587,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08593035016740978,
+            "ece10": 0.014723465312070336,
+            "confidence_ge_0_8_count": 772,
+            "confidence_ge_0_8_observed_rate": 0.9080310880829016
+          },
+          "top1": {
+            "brier": 0.17216581159250907,
+            "log_loss": 0.5169469261188432,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.657085067727154,
+            "ece10": 0.09145826486070927,
+            "confidence_ge_0_8_count": 772,
+            "confidence_ge_0_8_observed_rate": 0.9080310880829016
+          },
+          "rank2to10": {
+            "brier": 0.014966641193007122,
+            "log_loss": 0.06460503780520171,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.022468714882993752,
+            "ece10": 0.009775736554193976,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07313684974738106,
+          "all": {
+            "brier": 0.05131238094293698,
+            "log_loss": 0.1715866762089305,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07313684974738106,
+            "ece10": 0.03397212047538846,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "top1": {
+            "brier": 0.3285950488388614,
+            "log_loss": 1.105483429491699,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5614171873806781,
+            "ece10": 0.2789032840777861,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "rank2to10": {
+            "brier": 0.020503195621167616,
+            "log_loss": 0.0678203702886229,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.018883478899236916,
+            "ece10": 0.01644188130968036,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_plus_interactions": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08492007443677824,
+        "all": {
+          "brier": 0.032378957507751986,
+          "log_loss": 0.12058754904412815,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08492007443677824,
+          "ece10": 0.0047521515383322265,
+          "confidence_ge_0_8_count": 4656,
+          "confidence_ge_0_8_observed_rate": 0.8979810996563574
+        },
+        "top1": {
+          "brier": 0.15451915211275177,
+          "log_loss": 0.4747587975519041,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6606185381660722,
+          "ece10": 0.02531346240165943,
+          "confidence_ge_0_8_count": 4656,
+          "confidence_ge_0_8_observed_rate": 0.8979810996563574
+        },
+        "rank2to10": {
+          "brier": 0.018807824773863127,
+          "log_loss": 0.08123518809881972,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.020953578466856686,
+          "ece10": 0.002609376041417881,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08489270380260328,
+        "all": {
+          "brier": 0.0327604711424146,
+          "log_loss": 0.1193171578602936,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08489270380260328,
+          "ece10": 0.008291968337966091,
+          "confidence_ge_0_8_count": 1131,
+          "confidence_ge_0_8_observed_rate": 0.8974358974358975
+        },
+        "top1": {
+          "brier": 0.17298089559362084,
+          "log_loss": 0.5203815443445416,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6344852168958857,
+          "ece10": 0.048072447363974403,
+          "confidence_ge_0_8_count": 1131,
+          "confidence_ge_0_8_observed_rate": 0.8974358974358975
+        },
+        "rank2to10": {
+          "brier": 0.01718042398116946,
+          "log_loss": 0.07475444825093269,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.02382686901446079,
+          "ece10": 0.008082250742750444,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.07972449636725891,
+          "all": {
+            "brier": 0.03873248100741827,
+            "log_loss": 0.14166951752732593,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.07972449636725891,
+            "ece10": 0.006086040259316341,
+            "confidence_ge_0_8_count": 198,
+            "confidence_ge_0_8_observed_rate": 0.9292929292929293
+          },
+          "top1": {
+            "brier": 0.1808961573605855,
+            "log_loss": 0.534603206999569,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.5843781861093434,
+            "ece10": 0.047881769528389725,
+            "confidence_ge_0_8_count": 198,
+            "confidence_ge_0_8_observed_rate": 0.9292929292929293
+          },
+          "rank2to10": {
+            "brier": 0.022936516968177462,
+            "log_loss": 0.0980102186970767,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.02365186417369396,
+            "ece10": 0.0025741262346518907,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08687309748901205,
+          "all": {
+            "brier": 0.030457709703963595,
+            "log_loss": 0.11087112279519368,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08687309748901205,
+            "ece10": 0.012283662052504741,
+            "confidence_ge_0_8_count": 928,
+            "confidence_ge_0_8_observed_rate": 0.8922413793103449
+          },
+          "top1": {
+            "brier": 0.16934673222963703,
+            "log_loss": 0.5133145723174581,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6533967340207865,
+            "ece10": 0.0630413609228184,
+            "confidence_ge_0_8_count": 928,
+            "confidence_ge_0_8_observed_rate": 0.8922413793103449
+          },
+          "rank2to10": {
+            "brier": 0.015025596089999883,
+            "log_loss": 0.06615518395938651,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.023926026763259327,
+            "ece10": 0.011712514281129032,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.07496342768869838,
+          "all": {
+            "brier": 0.046692993740021255,
+            "log_loss": 0.14186486944564633,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.07496342768869838,
+            "ece10": 0.04790834936451938,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "top1": {
+            "brier": 0.2911201959921705,
+            "log_loss": 0.8246540869541676,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5876840146826426,
+            "ece10": 0.32748211609553013,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "rank2to10": {
+            "brier": 0.01953441571200467,
+            "log_loss": 0.06599940083358845,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.01799447357826012,
+            "ece10": 0.016844597505518196,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    },
+    "full_all_extras": {
+      "cv": {
+        "candidates": 110210,
+        "positives": 9366,
+        "mean_confidence": 0.08486855844726329,
+        "all": {
+          "brier": 0.031302101380448255,
+          "log_loss": 0.1154362628965568,
+          "observed_rate": 0.08498321386444062,
+          "mean_confidence": 0.08486855844726329,
+          "ece10": 0.004239632444732005,
+          "confidence_ge_0_8_count": 4909,
+          "confidence_ge_0_8_observed_rate": 0.9052760236300672
+        },
+        "top1": {
+          "brier": 0.1479725693617036,
+          "log_loss": 0.45432283287588315,
+          "observed_rate": 0.6625533073223845,
+          "mean_confidence": 0.6609118639408531,
+          "ece10": 0.021133003373029723,
+          "confidence_ge_0_8_count": 4909,
+          "confidence_ge_0_8_observed_rate": 0.9052760236300672
+        },
+        "rank2to10": {
+          "brier": 0.018338716049197665,
+          "log_loss": 0.07778219956552056,
+          "observed_rate": 0.020808759035780177,
+          "mean_confidence": 0.02086374672575331,
+          "ece10": 0.0023695534601485702,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test": {
+        "candidates": 30670,
+        "positives": 2628,
+        "mean_confidence": 0.08573795416889247,
+        "all": {
+          "brier": 0.03182194079422718,
+          "log_loss": 0.11530818297530376,
+          "observed_rate": 0.08568633844147375,
+          "mean_confidence": 0.08573795416889247,
+          "ece10": 0.00899743741975141,
+          "confidence_ge_0_8_count": 1185,
+          "confidence_ge_0_8_observed_rate": 0.8987341772151899
+        },
+        "top1": {
+          "brier": 0.16904577999087103,
+          "log_loss": 0.5087460934535221,
+          "observed_rate": 0.677535050537985,
+          "mean_confidence": 0.6373829328260745,
+          "ece10": 0.06712124869407184,
+          "confidence_ge_0_8_count": 1185,
+          "confidence_ge_0_8_observed_rate": 0.8987341772151899
+        },
+        "rank2to10": {
+          "brier": 0.016574847550155643,
+          "log_loss": 0.07159285958883507,
+          "observed_rate": 0.01992537043075028,
+          "mean_confidence": 0.024444067651427804,
+          "ece10": 0.008289653148500222,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "final_test_by_suite": {
+        "reparos-compositional-4k": {
+          "candidates": 8280,
+          "positives": 686,
+          "mean_confidence": 0.08584729132873993,
+          "all": {
+            "brier": 0.03678659661532868,
+            "log_loss": 0.13316199817194538,
+            "observed_rate": 0.08285024154589372,
+            "mean_confidence": 0.08584729132873993,
+            "ece10": 0.00633703716352405,
+            "confidence_ge_0_8_count": 268,
+            "confidence_ge_0_8_observed_rate": 0.914179104477612
+          },
+          "top1": {
+            "brier": 0.16461576840420672,
+            "log_loss": 0.492330945317894,
+            "observed_rate": 0.6026570048309179,
+            "mean_confidence": 0.6177414543557346,
+            "ece10": 0.04618472342576849,
+            "confidence_ge_0_8_count": 268,
+            "confidence_ge_0_8_observed_rate": 0.914179104477612
+          },
+          "rank2to10": {
+            "brier": 0.022583355305453353,
+            "log_loss": 0.09325433737795107,
+            "observed_rate": 0.02509393451422437,
+            "mean_confidence": 0.026747939881296045,
+            "ece10": 0.003269581960054177,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-diagnostic-10k": {
+          "candidates": 22260,
+          "positives": 1932,
+          "mean_confidence": 0.08575976529219569,
+          "all": {
+            "brier": 0.029871998334274123,
+            "log_loss": 0.10840832245717807,
+            "observed_rate": 0.08679245283018867,
+            "mean_confidence": 0.08575976529219569,
+            "ece10": 0.013376130253789222,
+            "confidence_ge_0_8_count": 912,
+            "confidence_ge_0_8_observed_rate": 0.8958333333333334
+          },
+          "top1": {
+            "brier": 0.16979866028194057,
+            "log_loss": 0.5117806427694594,
+            "observed_rate": 0.706199460916442,
+            "mean_confidence": 0.6450301727060309,
+            "ece10": 0.10225234257336101,
+            "confidence_ge_0_8_count": 912,
+            "confidence_ge_0_8_observed_rate": 0.8958333333333334
+          },
+          "rank2to10": {
+            "brier": 0.014324591451200075,
+            "log_loss": 0.0635891757558135,
+            "observed_rate": 0.017969451931716084,
+            "mean_confidence": 0.02361860891288068,
+            "ece10": 0.011378184394697722,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        },
+        "reparos-user-centric-v2": {
+          "candidates": 130,
+          "positives": 10,
+          "mean_confidence": 0.0750392827206885,
+          "all": {
+            "brier": 0.049501702023724094,
+            "log_loss": 0.1596259160928832,
+            "observed_rate": 0.07692307692307693,
+            "mean_confidence": 0.0750392827206885,
+            "ece10": 0.048347812513148826,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "top1": {
+            "brier": 0.3222871696706617,
+            "log_loss": 1.0346565456861103,
+            "observed_rate": 0.5384615384615384,
+            "mean_confidence": 0.5789512559536509,
+            "ece10": 0.3732460974813879,
+            "confidence_ge_0_8_count": 5,
+            "confidence_ge_0_8_observed_rate": 0.6
+          },
+          "rank2to10": {
+            "brier": 0.019192205618508804,
+            "log_loss": 0.06240029058252465,
+            "observed_rate": 0.02564102564102564,
+            "mean_confidence": 0.019049063472581545,
+            "ece10": 0.016673272363688693,
+            "confidence_ge_0_8_count": 0,
+            "confidence_ge_0_8_observed_rate": null
+          }
+        }
+      }
+    }
+  },
+  "selected_by_cv_all_candidate_brier": "full_all_extras",
+  "selected_model": {
+    "kind": "logistic",
+    "features": [
+      "sequence_score",
+      "gap_from_top_score",
+      "top1_top2_margin",
+      "character_change_ratio",
+      "relative_length_change",
+      "unchanged_input",
+      "input_length",
+      "rank_1",
+      "rank_2",
+      "rank_3",
+      "rank_4",
+      "rank_5",
+      "rank_6",
+      "rank_7",
+      "rank_8",
+      "rank_9",
+      "rank_10",
+      "log1p_margin",
+      "log1p_gap",
+      "gap_to_next",
+      "gap_from_previous",
+      "margin_x_rank1",
+      "margin_x_rank2",
+      "change_x_rank1",
+      "score_x_rank1",
+      "accent_fold_change",
+      "score_squared"
+    ],
+    "mean": [
+      -8.080980265035613,
+      7.862824374886761,
+      5.4125850292593825,
+      0.21341996757098883,
+      0.05307949066992356,
+      0.028708828599945557,
+      19.959350331185917,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      0.1,
+      1.6152624551945065,
+      1.9272957592526805,
+      1.0631322697257943,
+      1.0631322697257943,
+      0.5412585029259382,
+      0.5412585029259382,
+      0.017817963628333943,
+      -0.021815589014885266,
+      0.10745368680919758,
+      87.1247562175197
+    ],
+    "scale": [
+      4.671457392894069,
+      4.864480878485146,
+      3.974355464016878,
+      0.1531111608212593,
+      0.25929183339505657,
+      0.16698692092605488,
+      13.808868714738013,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.30000000000000004,
+      0.7535750320040862,
+      0.8430845939089764,
+      2.1016965444327855,
+      2.101696544432785,
+      2.053338023400612,
+      2.053338023400612,
+      0.07228103785435214,
+      0.14920152743205875,
+      0.11056993893677941,
+      77.63327351992614
+    ],
+    "parameters": [
+      -4.342886765811547,
+      0.49978799180550376,
+      -0.349404156546813,
+      -0.0691809789855571,
+      -0.13991787056572758,
+      -0.24529980887666397,
+      -0.15979506021980294,
+      -0.22661574373622223,
+      0.4437919863505687,
+      0.18718108217439325,
+      -0.004513239391815096,
+      -0.015806210683622812,
+      -0.08343605347188003,
+      -0.09005337179579687,
+      -0.06764879127962173,
+      -0.0909987767703594,
+      -0.17068679028322753,
+      -0.10782983484863891,
+      0.0046186530767634865,
+      -0.28961006933687744,
+      0.4419689348495603,
+      -0.11317566130839088,
+      0.1273284962292001,
+      -0.008374027062422957,
+      0.15273448255812805,
+      0.21517368613618804,
+      -0.9203326885152712,
+      -0.02290598962871994
+    ],
+    "iterations": 8
+  },
+  "selected_test_calibration_bins": [
+    {
+      "range": [
+        0.0,
+        0.1
+      ],
+      "count": 26187,
+      "mean_confidence": 0.014153358091680435,
+      "observed_exact_rate": 0.010615954481231146
+    },
+    {
+      "range": [
+        0.1,
+        0.2
+      ],
+      "count": 1096,
+      "mean_confidence": 0.1348096729666886,
+      "observed_exact_rate": 0.13047445255474452
+    },
+    {
+      "range": [
+        0.2,
+        0.3
+      ],
+      "count": 548,
+      "mean_confidence": 0.25200280735855096,
+      "observed_exact_rate": 0.2791970802919708
+    },
+    {
+      "range": [
+        0.3,
+        0.4
+      ],
+      "count": 358,
+      "mean_confidence": 0.3553446146944641,
+      "observed_exact_rate": 0.505586592178771
+    },
+    {
+      "range": [
+        0.4,
+        0.5
+      ],
+      "count": 304,
+      "mean_confidence": 0.44122030144731683,
+      "observed_exact_rate": 0.3223684210526316
+    },
+    {
+      "range": [
+        0.5,
+        0.6
+      ],
+      "count": 316,
+      "mean_confidence": 0.5510674385241099,
+      "observed_exact_rate": 0.6708860759493671
+    },
+    {
+      "range": [
+        0.6,
+        0.7
+      ],
+      "count": 262,
+      "mean_confidence": 0.6458495550513979,
+      "observed_exact_rate": 0.6755725190839694
+    },
+    {
+      "range": [
+        0.7,
+        0.8
+      ],
+      "count": 414,
+      "mean_confidence": 0.7473085558707915,
+      "observed_exact_rate": 0.7753623188405797
+    },
+    {
+      "range": [
+        0.8,
+        0.9
+      ],
+      "count": 594,
+      "mean_confidence": 0.8505906876322279,
+      "observed_exact_rate": 0.8417508417508418
+    },
+    {
+      "range": [
+        0.9,
+        1.0
+      ],
+      "count": 591,
+      "mean_confidence": 0.9370038540226422,
+      "observed_exact_rate": 0.9560067681895094
+    }
+  ],
+  "paired_test_brier_gain_vs_selected": {
+    "full_with_margin": {
+      "mean_brier_gain": 0.0013639458134526929,
+      "bootstrap_95pct_interval": [
+        0.0009333337029569936,
+        0.0018040640574031946
+      ],
+      "resampling_unit": "query; 1000 paired bootstrap resamples"
+    },
+    "full_plus_accent_fold": {
+      "mean_brier_gain": 0.0004636877617501242,
+      "bootstrap_95pct_interval": [
+        0.00011903193523166779,
+        0.0008065049720034962
+      ],
+      "resampling_unit": "query; 1000 paired bootstrap resamples"
+    }
+  },
+  "leave_one_suite_out": {
+    "reparos-compositional-4k": {
+      "train_queries": 9728,
+      "test_queries": 4000,
+      "full_with_margin": {
+        "candidates": 40000,
+        "positives": 3278,
+        "mean_confidence": 0.07792401137536961,
+        "all": {
+          "brier": 0.039551782053839385,
+          "log_loss": 0.1453726502653626,
+          "observed_rate": 0.08195,
+          "mean_confidence": 0.07792401137536961,
+          "ece10": 0.00963157415930218,
+          "confidence_ge_0_8_count": 741,
+          "confidence_ge_0_8_observed_rate": 0.9500674763832658
+        },
+        "top1": {
+          "brier": 0.17635900290191445,
+          "log_loss": 0.5268287250936777,
+          "observed_rate": 0.5785,
+          "mean_confidence": 0.5801122138756374,
+          "ece10": 0.06416400044399675,
+          "confidence_ge_0_8_count": 741,
+          "confidence_ge_0_8_observed_rate": 0.9500674763832658
+        },
+        "rank2to10": {
+          "brier": 0.0243509797373866,
+          "log_loss": 0.10298864195110538,
+          "observed_rate": 0.02677777777777778,
+          "mean_confidence": 0.02212532220867318,
+          "ece10": 0.004669258247697661,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "full_plus_accent_fold": {
+        "candidates": 40000,
+        "positives": 3278,
+        "mean_confidence": 0.0906657035039188,
+        "all": {
+          "brier": 0.03818014704304021,
+          "log_loss": 0.1385329923973426,
+          "observed_rate": 0.08195,
+          "mean_confidence": 0.0906657035039188,
+          "ece10": 0.012139656152733325,
+          "confidence_ge_0_8_count": 1083,
+          "confidence_ge_0_8_observed_rate": 0.9362880886426593
+        },
+        "top1": {
+          "brier": 0.1698862221271208,
+          "log_loss": 0.5101372037699577,
+          "observed_rate": 0.5785,
+          "mean_confidence": 0.6486620347272185,
+          "ece10": 0.10440156121536377,
+          "confidence_ge_0_8_count": 1083,
+          "confidence_ge_0_8_observed_rate": 0.9362880886426593
+        },
+        "rank2to10": {
+          "brier": 0.02354613870036459,
+          "log_loss": 0.09724363557816315,
+          "observed_rate": 0.02677777777777778,
+          "mean_confidence": 0.028666111145774387,
+          "ece10": 0.003746987350799012,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "full_all_extras": {
+        "candidates": 40000,
+        "positives": 3278,
+        "mean_confidence": 0.08872843024094675,
+        "all": {
+          "brier": 0.03822400725415515,
+          "log_loss": 0.13716998083047485,
+          "observed_rate": 0.08195,
+          "mean_confidence": 0.08872843024094675,
+          "ece10": 0.009437640438860693,
+          "confidence_ge_0_8_count": 1584,
+          "confidence_ge_0_8_observed_rate": 0.8819444444444444
+        },
+        "top1": {
+          "brier": 0.16963667731915205,
+          "log_loss": 0.5088229481697588,
+          "observed_rate": 0.5785,
+          "mean_confidence": 0.659990830879539,
+          "ece10": 0.08898248007391706,
+          "confidence_ge_0_8_count": 1584,
+          "confidence_ge_0_8_observed_rate": 0.8819444444444444
+        },
+        "rank2to10": {
+          "brier": 0.023622599469155493,
+          "log_loss": 0.09587520668166553,
+          "observed_rate": 0.02677777777777778,
+          "mean_confidence": 0.025254830169992068,
+          "ece10": 0.0024300958061774527,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      }
+    },
+    "reparos-diagnostic-10k": {
+      "train_queries": 3177,
+      "test_queries": 10000,
+      "full_with_margin": {
+        "candidates": 100000,
+        "positives": 8646,
+        "mean_confidence": 0.0796220106147985,
+        "all": {
+          "brier": 0.0359069803568154,
+          "log_loss": 0.13627457364315876,
+          "observed_rate": 0.08646,
+          "mean_confidence": 0.0796220106147985,
+          "ece10": 0.009028439086493109,
+          "confidence_ge_0_8_count": 3709,
+          "confidence_ge_0_8_observed_rate": 0.8913453761121596
+        },
+        "top1": {
+          "brier": 0.21113297728034314,
+          "log_loss": 0.6503914285386693,
+          "observed_rate": 0.701,
+          "mean_confidence": 0.61141130047448,
+          "ece10": 0.11149319653843594,
+          "confidence_ge_0_8_count": 3709,
+          "confidence_ge_0_8_observed_rate": 0.8913453761121596
+        },
+        "rank2to10": {
+          "brier": 0.016437425143090097,
+          "log_loss": 0.0791504786547687,
+          "observed_rate": 0.01817777777777778,
+          "mean_confidence": 0.020534311741500534,
+          "ece10": 0.004509817305582232,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "full_plus_accent_fold": {
+        "candidates": 100000,
+        "positives": 8646,
+        "mean_confidence": 0.06133328107824298,
+        "all": {
+          "brier": 0.040518824224500385,
+          "log_loss": 0.1508571858348479,
+          "observed_rate": 0.08646,
+          "mean_confidence": 0.06133328107824309,
+          "ece10": 0.025786549456126556,
+          "confidence_ge_0_8_count": 2711,
+          "confidence_ge_0_8_observed_rate": 0.9542604205090373
+        },
+        "top1": {
+          "brier": 0.25562836124408356,
+          "log_loss": 0.7729424310261029,
+          "observed_rate": 0.701,
+          "mean_confidence": 0.4843811747319398,
+          "ece10": 0.22321713061175655,
+          "confidence_ge_0_8_count": 2704,
+          "confidence_ge_0_8_observed_rate": 0.9567307692307693
+        },
+        "rank2to10": {
+          "brier": 0.016617764555657805,
+          "log_loss": 0.08173660303581955,
+          "observed_rate": 0.01817777777777778,
+          "mean_confidence": 0.01432795956116567,
+          "ece10": 0.004553089182883842,
+          "confidence_ge_0_8_count": 7,
+          "confidence_ge_0_8_observed_rate": 0.0
+        }
+      },
+      "full_all_extras": {
+        "candidates": 100000,
+        "positives": 8646,
+        "mean_confidence": 0.06395384013184334,
+        "all": {
+          "brier": 0.038272765000517184,
+          "log_loss": 0.14409458334538014,
+          "observed_rate": 0.08646,
+          "mean_confidence": 0.06395384013184334,
+          "ece10": 0.023421654820441694,
+          "confidence_ge_0_8_count": 3153,
+          "confidence_ge_0_8_observed_rate": 0.9352997145575642
+        },
+        "top1": {
+          "brier": 0.2354694177971335,
+          "log_loss": 0.7212835850959108,
+          "observed_rate": 0.701,
+          "mean_confidence": 0.5083334999321215,
+          "ece10": 0.201672339460651,
+          "confidence_ge_0_8_count": 3150,
+          "confidence_ge_0_8_observed_rate": 0.9361904761904762
+        },
+        "rank2to10": {
+          "brier": 0.016362025800893153,
+          "log_loss": 0.0799624720397656,
+          "observed_rate": 0.01817777777777778,
+          "mean_confidence": 0.01457832237625688,
+          "ece10": 0.0051020495631806185,
+          "confidence_ge_0_8_count": 3,
+          "confidence_ge_0_8_observed_rate": 0.0
+        }
+      }
+    },
+    "reparos-user-centric-v2": {
+      "train_queries": 13996,
+      "test_queries": 88,
+      "full_with_margin": {
+        "candidates": 880,
+        "positives": 70,
+        "mean_confidence": 0.06836626340782934,
+        "all": {
+          "brier": 0.03463557011545382,
+          "log_loss": 0.12521524890015465,
+          "observed_rate": 0.07954545454545454,
+          "mean_confidence": 0.06836626340782934,
+          "ece10": 0.019247038171001547,
+          "confidence_ge_0_8_count": 14,
+          "confidence_ge_0_8_observed_rate": 0.8571428571428571
+        },
+        "top1": {
+          "brier": 0.20475084528603568,
+          "log_loss": 0.635837936988033,
+          "observed_rate": 0.6363636363636364,
+          "mean_confidence": 0.5390074802223702,
+          "ece10": 0.16302740453980924,
+          "confidence_ge_0_8_count": 14,
+          "confidence_ge_0_8_observed_rate": 0.8571428571428571
+        },
+        "rank2to10": {
+          "brier": 0.015733872874278052,
+          "log_loss": 0.06847939466816817,
+          "observed_rate": 0.017676767676767676,
+          "mean_confidence": 0.016072794872880335,
+          "ece10": 0.003271441907800686,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "full_plus_accent_fold": {
+        "candidates": 880,
+        "positives": 70,
+        "mean_confidence": 0.05780507246870349,
+        "all": {
+          "brier": 0.04008621969323447,
+          "log_loss": 0.15278210793664412,
+          "observed_rate": 0.07954545454545454,
+          "mean_confidence": 0.05780507246870349,
+          "ece10": 0.02613125247481716,
+          "confidence_ge_0_8_count": 17,
+          "confidence_ge_0_8_observed_rate": 0.8235294117647058
+        },
+        "top1": {
+          "brier": 0.2562045014663036,
+          "log_loss": 0.8626541396960662,
+          "observed_rate": 0.6363636363636364,
+          "mean_confidence": 0.4644036093602308,
+          "ece10": 0.21586873098406667,
+          "confidence_ge_0_8_count": 17,
+          "confidence_ge_0_8_observed_rate": 0.8235294117647058
+        },
+        "rank2to10": {
+          "brier": 0.01607307727400456,
+          "log_loss": 0.07390743774115276,
+          "observed_rate": 0.017676767676767676,
+          "mean_confidence": 0.0126274572585338,
+          "ece10": 0.0058689327227237215,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      },
+      "full_all_extras": {
+        "candidates": 880,
+        "positives": 70,
+        "mean_confidence": 0.06098982852237099,
+        "all": {
+          "brier": 0.03704399043746078,
+          "log_loss": 0.14446723400768693,
+          "observed_rate": 0.07954545454545454,
+          "mean_confidence": 0.06098982852237099,
+          "ece10": 0.021528240059183204,
+          "confidence_ge_0_8_count": 23,
+          "confidence_ge_0_8_observed_rate": 0.8695652173913043
+        },
+        "top1": {
+          "brier": 0.22529428844293872,
+          "log_loss": 0.7609950811703822,
+          "observed_rate": 0.6363636363636364,
+          "mean_confidence": 0.49263285433602994,
+          "ece10": 0.17345692238860286,
+          "confidence_ge_0_8_count": 23,
+          "confidence_ge_0_8_observed_rate": 0.8695652173913043
+        },
+        "rank2to10": {
+          "brier": 0.01612729065907434,
+          "log_loss": 0.07596413987849858,
+          "observed_rate": 0.017676767676767676,
+          "mean_confidence": 0.013029492320853323,
+          "ece10": 0.007168742392117771,
+          "confidence_ge_0_8_count": 0,
+          "confidence_ge_0_8_observed_rate": null
+        }
+      }
+    }
+  },
+  "elapsed_seconds": 54.876,
+  "selected_scores": "D:\\New folder\\QU-solution\\artifacts\\reparos_base_v3_confidence_14088\\confidence_comparison\\top10_selected_confidence.jsonl"
+}

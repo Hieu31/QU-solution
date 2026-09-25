@@ -1,0 +1,9 @@
+{
+  "ctranslate2_version": "4.6.2",
+  "quantization": "float16",
+  "schema_version": 1,
+  "source_checkpoint_sha256": "2afa1130bd08dcedfac0cda9afc84b9965c80623aa4eae9958656c9a313c184f",
+  "source_format": "OpenNMT-py",
+  "tokenizer_sha256": "917ff7bf9c4ba17d42ed28f9b43c5f6c871784ef1db47e7f6c72b4b9fc41cd8b",
+  "unsafe_deserialization_authorized": true
+}

@@ -1,0 +1,49 @@
+{
+  "schema_version": 1,
+  "task": "predict strict gold-exact label for each ReparoS top-10 candidate",
+  "feature_names": [
+    "sequence_score",
+    "rank",
+    "gap_from_top_score",
+    "character_change_ratio",
+    "relative_length_change",
+    "unchanged_input",
+    "input_length"
+  ],
+  "feature_mean": [
+    -7.980576237386464,
+    5.5,
+    7.755952284244664,
+    0.21347676636828183,
+    0.06008793290585412,
+    0.029145508667483805,
+    19.402731570653124
+  ],
+  "feature_scale": [
+    4.6435458726362056,
+    2.8722813232690143,
+    4.834532021781623,
+    0.1541919751523711,
+    0.2650391655466974,
+    0.16821429187786732,
+    13.688070880560911
+  ],
+  "intercept": -5.198688236069774,
+  "coefficients": [
+    2.268462647126865,
+    -1.0470099879846624,
+    -0.007645887875495077,
+    -0.40920302476564147,
+    -0.32730135390596105,
+    -0.05628690658415403,
+    -0.07427301513052925
+  ],
+  "l2": 0.001,
+  "iterations": 8,
+  "input": "D:\\New folder\\QU-solution\\artifacts\\reparos_base_v3_confidence_14088\\top10_predictions.jsonl",
+  "input_sha256": "b6423713fbca734e2a772b96c8334067603a45419dc0f377bf504d74794fd63b",
+  "split": "SHA256(seed + NFC/whitespace-normalized expected); all 10 candidates of a query share a split",
+  "seed": 2026,
+  "holdout_fraction": 0.2,
+  "label_limitation": "Gold-exact is a proxy; alternative correct rewrites may be labeled 0. Diagnostic data is not production traffic."
+}

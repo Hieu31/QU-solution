@@ -13,10 +13,11 @@ wheels/
 data/osm/*.pbf
 data/osm/*.pbf.*
 data/osm/prepared/
-data
+data/base_v3_production_canonical
+data/base_v3_eval
+data/zero_click.csv
 
 # Artifacts
-artifacts
 benchmarks
 benchmark
 

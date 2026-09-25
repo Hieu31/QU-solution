@@ -1,0 +1,64 @@
+{
+  "schema_version": 1,
+  "purpose": "candidate-level relative confidence development",
+  "label_policy": "NFC and whitespace-normalized exact match to gold; case and punctuation preserved; other valid rewrites may be labeled 0",
+  "warning": "These diagnostic suites are used for confidence development and are not independent confidence test sets.",
+  "model_export": "D:\\New folder\\QU-solution\\artifacts\\reparos_base_v3_production_checkpoints\\checkpoints\\base_v3_production\\ctranslate2_export",
+  "model_bin_sha256": "457fc3ed503630761e10e6e1a17693474d1843975bc232eb0346f7098e60d6b6",
+  "config_sha256": "5f50f3cc6c9f871a78c5f58c199ddd8b236302d65075b1c69a13ac701b6e4b3c",
+  "tokenizer_sha256": "917ff7bf9c4ba17d42ed28f9b43c5f6c871784ef1db47e7f6c72b4b9fc41cd8b",
+  "conversion_manifest": {
+    "ctranslate2_version": "4.6.2",
+    "quantization": "float16",
+    "schema_version": 1,
+    "source_checkpoint_sha256": "2afa1130bd08dcedfac0cda9afc84b9965c80623aa4eae9958656c9a313c184f",
+    "source_format": "OpenNMT-py",
+    "tokenizer_sha256": "917ff7bf9c4ba17d42ed28f9b43c5f6c871784ef1db47e7f6c72b4b9fc41cd8b",
+    "unsafe_deserialization_authorized": true
+  },
+  "device": "cpu",
+  "compute_type": "default",
+  "ctranslate2_version": "4.8.2",
+  "decoding": {
+    "beam_size": 10,
+    "num_hypotheses": 10,
+    "min_decoding_length": 0,
+    "max_decoding_length": 100,
+    "length_penalty": 1.0,
+    "ctranslate2_length_penalty": 0.0,
+    "coverage_penalty": 0.0,
+    "patience": 1.0,
+    "no_repeat_ngram_size": 0,
+    "disable_unk": false
+  },
+  "preprocessing": "raw input exactly as stored in gold.jsonl; SentencePiece encodes it directly",
+  "queries": 14088,
+  "candidate_rows": 140880,
+  "strict_exact_positive_candidates_by_suite": {
+    "reparos-diagnostic-10k": 8646,
+    "reparos-compositional-4k": 3278,
+    "reparos-user-centric-v2": 70
+  },
+  "sources": {
+    "reparos-diagnostic-10k": {
+      "path": "D:\\New folder\\QU-solution\\benchmark\\reparos-diagnostic-10k\\gold.jsonl",
+      "rows": 10000,
+      "sha256": "4a751ae10799c47741dd5659a1017362b5fd4eef5fe2646ea8f8bee3124f6ad1"
+    },
+    "reparos-compositional-4k": {
+      "path": "D:\\New folder\\QU-solution\\benchmark\\reparos-compositional-4k\\gold.jsonl",
+      "rows": 4000,
+      "sha256": "5406f286738df86e06bdb1910c56bb18eef73726f1387b83c959b49f151a1705"
+    },
+    "reparos-user-centric-v2": {
+      "path": "D:\\New folder\\QU-solution\\benchmark\\reparos-user-centric-v2\\gold.jsonl",
+      "rows": 88,
+      "sha256": "0561a4554173d7ec4d4dff87c73ce80e42446e17b39be9d43b75b5ff01e81b7e"
+    }
+  },
+  "outputs": {
+    "top10_predictions": "D:\\New folder\\QU-solution\\artifacts\\reparos_base_v3_confidence_14088\\top10_predictions.jsonl",
+    "candidate_labels": "D:\\New folder\\QU-solution\\artifacts\\reparos_base_v3_confidence_14088\\candidate_labels.jsonl"
+  },
+  "elapsed_seconds": 120.446
+}
