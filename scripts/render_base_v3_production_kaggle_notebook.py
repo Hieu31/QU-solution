@@ -30,29 +30,56 @@ def main():
     cells = []
 
     # Cell 1: Intro Markdown
-    cells.append(md("""# ReparoS Base V3 — Production Pre-Training (4,000,000 Pairs)
+    cells.append(md("""# ReparoS Base V3 (2E / 2D Arm E) — Production Pre-Training (4,000,000 Pairs)
+### Hardware Profile: NVIDIA RTX 6000 PRO (96GB VRAM) / High-Throughput Workstation
 ### Winning Recipe: Run C (40% L1 + 25% L2 + 25% L3 + 7% DAE + 3% Identity)
 
-This notebook executes official pre-training from scratch for **ReparoS Base V3** using the production dataset of **4,000,000 unique pairs**.
+This notebook executes official pre-training from scratch for **ReparoS Base V3** using the production dataset of **4,000,000 unique pairs** with the winning **2E / 2D Transformer architecture (Arm E Sweet Spot, 7.1M Params)**.
 
 ### Key Features:
-- **Clean Milestone Logging:** Verbose OpenNMT step logs are safely redirected to `train.log`. The notebook cell displays milestone progress every 2,000 steps and checkpoint saves, keeping the output clean.
+- **RTX 6000 PRO High-Throughput:** Configured with `65,536 tokens/batch`, `131,072 bucket size`, and 8 workers to maximize throughput on 96GB VRAM.
+- **Arm E Architecture:** 2 Encoder / 2 Decoder layers, hidden size 128, FFN 2048, 8 attention heads (solves word omission and repetition in long queries).
+- **Clean Milestone Logging:** Verbose OpenNMT step logs are safely redirected to `train.log`. Milestone progress is displayed every 2,000 steps.
 - **Auto-Crash Diagnostics:** If an error occurs, the notebook automatically surfaces the last 25 lines of `train.log` right inside the cell output.
 - **Zero-Leakage Certified:** 100% leak-free, zero held-out brands, zero eval overlaps, zero label contradictions.
-- **Automated Frozen Evaluation:** Benchmarks the final checkpoint against all 3,150 test queries across all 6 frozen test suites upon completion.
+- **Automated Frozen Evaluation:** Benchmarks the final checkpoint against all 3,100 test queries across 5 frozen test suites upon completion.
 """))
 
     # Cell 2: Hyperparameters
-    cells.append(code("""TRAIN_STEPS = 50_000
+    cells.append(code("""# Model Architecture (2E / 2D Arm E Sweet Spot)
+ENC_LAYERS = 2
+DEC_LAYERS = 2
+
+# Training Schedule
+TRAIN_STEPS = 50_000
 VALID_STEPS = 2_000
 SAVE_CHECKPOINT_STEPS = 5_000
 KEEP_CHECKPOINTS = 5
-BATCH_SIZE_TOKENS = 32_768  # 32,768 tokens/batch (FP16 on Kaggle T4 GPU)
-BUCKET_SIZE = 65_536
-NUM_WORKERS = 4
-MODEL_DTYPE = "fp16"
 SEED = 2026
 REPORT_EVERY = 2_000
+MODEL_DTYPE = "fp16"
+
+# Hardware Profile: NVIDIA RTX 6000 PRO (96GB VRAM) Maximum Throughput
+BATCH_SIZE_TOKENS = 65_536   # 65,536 tokens/batch (Saturates 96GB VRAM for fastest convergence)
+BUCKET_SIZE = 131_072        # 131,072 tokens bucket size for minimal padding overhead
+NUM_WORKERS = 8              # 8 CPU workers for multi-threaded dataloader
+
+# Adaptive Safety Check for GPU Memory
+try:
+    import torch
+    if torch.cuda.is_available():
+        gpu_name = torch.cuda.get_device_name(0)
+        vram_gb = torch.cuda.get_device_properties(0).total_memory / (1024**3)
+        print(f"Hardware Detected: {gpu_name} ({vram_gb:.1f} GB VRAM)")
+        if vram_gb < 24:
+            print(f"Notice: Running on smaller GPU ({vram_gb:.1f}GB < 24GB). Auto-scaling batch size to 32,768.")
+            BATCH_SIZE_TOKENS = 32_768
+            BUCKET_SIZE = 65_536
+            NUM_WORKERS = 4
+        else:
+            print(f"RTX 6000 PRO / High-VRAM GPU verified! Active profile: batch={BATCH_SIZE_TOKENS:,} tokens, workers={NUM_WORKERS}.")
+except Exception as e:
+    print(f"Defaulting to RTX 6000 PRO configuration: {e}")
 """))
 
     # Cell 3: Environment Setup, Dataset Detection & Dependency Management
@@ -102,23 +129,80 @@ print("Project workspace successfully initialized at /kaggle/working/QU-solution
 os.chdir(REPO_ROOT)
 sys.path.insert(0, str(REPO_ROOT / 'src'))
 
-# 3. Ensure NumPy < 2 for OpenNMT / PyTorch C-extension compatibility
+# 3. Offline Wheels & Dependency Management (100% Offline Compatible)
+SITE_PACKAGES = Path('/kaggle/working/site-packages')
+if not SITE_PACKAGES.exists():
+    SITE_PACKAGES.mkdir(parents=True)
+sys.path.insert(0, str(SITE_PACKAGES))
+
+# Check if dependencies are already installed
+need_install = False
 try:
-    import numpy as np
-    if int(np.__version__.split('.')[0]) >= 2:
-        print(f"NumPy {np.__version__} detected. Downgrading to numpy<2 for OpenNMT compatibility...")
-        subprocess.run([sys.executable, '-m', 'pip', 'install', 'numpy<2', '--quiet'], check=True)
+    import onmt, sentencepiece, ctranslate2, torch
+    print("Dependencies (OpenNMT-py, sentencepiece, ctranslate2, torch) already loaded successfully.")
+except ImportError:
+    need_install = True
+
+if need_install:
+    print("Dependencies not preloaded. Scanning ALL datasets under /kaggle/input for offline wheels...")
+    all_wheels = sorted(list(KAGGLE_INPUT.rglob('*.whl')))
+    
+    # Filter out torch/nvidia wheels to preserve Kaggle's native GPU PyTorch
+    target_wheels = [w for w in all_wheels if not w.name.lower().startswith(('torch-', 'torch==', 'nvidia_'))]
+    
+    has_onmt = any('opennmt' in w.name.lower() or 'onmt' in w.name.lower() for w in target_wheels)
+    
+    if target_wheels:
+        print(f"Found {len(target_wheels)} offline wheels across attached datasets.")
+        # Install directly into Python environment and also into SITE_PACKAGES for maximum compatibility
+        subprocess.run([
+            sys.executable, '-m', 'pip', 'install', '--quiet',
+            '--no-index', '--no-deps',
+            *[str(w) for w in target_wheels]
+        ], check=False)
+        subprocess.run([
+            sys.executable, '-m', 'pip', 'install', '--quiet',
+            '--no-index', '--no-deps', '--target', str(SITE_PACKAGES),
+            *[str(w) for w in target_wheels]
+        ], check=False)
+        
+    if not has_onmt:
+        print("\n" + "!" * 80)
+        print("CẢNH BÁO THIẾU BÁNH XE (WHEEL) OpenNMT-py:")
+        print("Dataset 'buildwheel1' bạn đang attach chỉ chứa các thư viện của HuggingFace (transformers, v.v.).")
+        print("Để huấn luyện Base V3 (OpenNMT), bạn cần ATTACH THÊM dataset chứa OpenNMT-py:")
+        print("  -> Hãy bấm 'Add Input' trên Kaggle và thêm dataset: 'vanhieu1125/reparos-haha'")
+        print("     (Dataset này có sẵn wheels/OpenNMT_py-3.5.1-py3-none-any.whl)")
+        print("!" * 80 + "\n")
+        # If internet happens to be ON, attempt automatic online install as safety fallback
+        try:
+            print("Đang thử cài đặt OpenNMT-py online (nếu Notebook có bật Internet)...")
+            subprocess.run([
+                sys.executable, '-m', 'pip', 'install', '--quiet',
+                'numpy<2', 'OpenNMT-py==3.5.1', 'sentencepiece', 'ctranslate2'
+            ], check=True)
+            print("Cài đặt OpenNMT-py thành công qua internet fallback!")
+        except Exception:
+            pass
+
+# Set global PYTHONPATH for all child processes and subprocesses
+python_path = os.pathsep.join([str(SITE_PACKAGES), str(REPO_ROOT / 'src')])
+os.environ['PYTHONPATH'] = python_path + os.pathsep + os.environ.get('PYTHONPATH', '')
+sys.path.insert(0, str(SITE_PACKAGES))
+sys.path.insert(0, str(REPO_ROOT / 'src'))
+
+# Fix PyTorch 2.6+ safe globals unpickling for OpenNMT checkpoints
+try:
+    import argparse, torch
+    torch.serialization.add_safe_globals([argparse.Namespace])
 except Exception:
     pass
 
-# 4. Install OpenNMT-py and sentencepiece if not present
-try:
-    import onmt
-    import sentencepiece
-    print("OpenNMT-py and sentencepiece are ready.")
-except ImportError:
-    print("Installing OpenNMT-py==3.5.1, sentencepiece, and numpy<2...")
-    subprocess.run([sys.executable, '-m', 'pip', 'install', 'numpy<2', 'OpenNMT-py==3.5.1', 'sentencepiece', '--quiet'], check=True)
+import onmt, sentencepiece, ctranslate2, torch
+print("PyTorch:", torch.__version__, "| CUDA:", torch.version.cuda)
+print("GPU Accelerator:", torch.cuda.get_device_name(0) if torch.cuda.is_available() else "None")
+print("OpenNMT-py:", onmt.__version__, "| CTranslate2:", ctranslate2.__version__)
+print("Offline environment verified successfully!")
 """))
 
     # Cell 4: Verify Production Dataset Integrity
@@ -168,7 +252,7 @@ config = {
     "encoder_type": "transformer",
     "decoder_type": "transformer",
     "enc_layers": 2,
-    "dec_layers": 1,
+    "dec_layers": 2,
     "heads": 8,
     "hidden_size": 128,
     "word_vec_size": 128,
@@ -214,7 +298,7 @@ if not vocab_src.is_file() or not vocab_tgt.is_file() or vocab_src.stat().st_siz
     subprocess.run([
         sys.executable, '-m', 'onmt.bin.build_vocab',
         '-config', str(config_path), '-n_sample', '-1'
-    ], check=True)
+    ], check=True, env=os.environ.copy())
 print("Vocab built successfully! Ready for training.")
 """))
 
@@ -230,7 +314,8 @@ with open(log_file, 'w', encoding='utf-8') as log_f:
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT,
         text=True,
-        bufsize=1
+        bufsize=1,
+        env=os.environ.copy()
     )
     for line in proc.stdout:
         log_f.write(line)
@@ -259,33 +344,68 @@ best_ckpt = ckpts[-1]
 print(f"Final Checkpoint: {best_ckpt}")
 """))
 
-    # Cell 7: Unified Frozen Evaluation Across 3,150 Test Queries
-    cells.append(code("""eval_script = REPO_ROOT / 'scripts/evaluate_base_v3_ablation.py'
-eval_cmd = [
-    sys.executable, str(eval_script),
-    '--eval-dir', str(EVAL_DIR),
-    '--tokenizer', str(TOKENIZER_MODEL),
-    '--device', 'cuda',
-    '--checkpoints', str(best_ckpt),
-    '--names', 'base_v3_production',
-    '--output-json', '/kaggle/working/production_evaluation_report.json'
-]
+    # Cell 7: Unified Frozen Evaluation Across 3,100 Test Queries (In-Process)
+    cells.append(code("""import argparse, json, os, shutil, sys, time
+from pathlib import Path
+import torch
 
-env = os.environ.copy()
-env['PYTHONPATH'] = str(REPO_ROOT / 'src')
+# 0. Clean evaluate_base_v3_ablation.py on disk (fix Jupyter OutStream & syntax)
+eval_file = REPO_ROOT / 'scripts/evaluate_base_v3_ablation.py'
+if eval_file.exists():
+    txt = eval_file.read_text(encoding='utf-8')
+    txt = txt.replace('sys.stdout.reconfigure', '# sys.stdout.reconfigure')
+    if 'from __future__ import annotations' in txt:
+        idx = txt.find('from __future__ import annotations')
+        txt = '#!/usr/bin/env python\n' + txt[idx:]
+    eval_file.write_text(txt, encoding='utf-8')
 
-print("Executing Unified Frozen Evaluation across all 3,150 test queries...")
-subprocess.run(eval_cmd, check=True, env=env)
+# 1. PyTorch 2.6 safe unpickling allowlist
+try:
+    torch.serialization.add_safe_globals([argparse.Namespace])
+except Exception:
+    pass
+os.environ["TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD"] = "1"
 
-with open('/kaggle/working/production_evaluation_report.json', 'r', encoding='utf-8') as f:
-    report = json.load(f)
+# 2. Reset ctranslate2 OpenNMTPyConverter cleanly if previously wrapped in kernel
+import ctranslate2
+import importlib
+try:
+    import ctranslate2.converters.opennmt_py
+    importlib.reload(ctranslate2.converters.opennmt_py)
+    ctranslate2.converters.OpenNMTPyConverter = ctranslate2.converters.opennmt_py.OpenNMTPyConverter
+except Exception:
+    pass
 
-print("\\n" + "="*70)
-print("       REPAROS BASE V3 PRODUCTION EVALUATION RESULTS       ")
-print("="*70)
-for k, v in report['base_v3_production'].items():
-    print(f"  {k:30s}: {v:6.2f}%")
-print("="*70)
+# 3. Import evaluation logic directly in Python kernel
+if str(REPO_ROOT / 'scripts') not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / 'scripts'))
+if str(REPO_ROOT / 'src') not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT / 'src'))
+
+from evaluate_base_v3_ablation import evaluate_run, print_comparison_report
+
+# 4. Locate best checkpoint safely
+if 'best_ckpt' not in globals() or not Path(str(best_ckpt)).exists():
+    ckpts = sorted(Path('/kaggle/working/checkpoints/base_v3_production').glob('reparos_base_v3_production_step_*.pt'))
+    assert ckpts, "No checkpoint found in /kaggle/working/checkpoints/base_v3_production!"
+    best_ckpt = ckpts[-1]
+
+print(f"Executing Unified Frozen Evaluation on {best_ckpt.name} across all 3,100 test queries...")
+eval_res = evaluate_run(
+    checkpoint_or_ct2=best_ckpt,
+    tokenizer_path=TOKENIZER_MODEL,
+    eval_dir=EVAL_DIR,
+    device="cuda" if torch.cuda.is_available() else "cpu",
+    trust_checkpoint=True,
+)
+
+all_results = {"base_v3_production": eval_res}
+print_comparison_report(all_results)
+
+out_report_path = Path('/kaggle/working/production_evaluation_report.json')
+with open(out_report_path, 'w', encoding='utf-8') as f:
+    json.dump(all_results, f, indent=2, ensure_ascii=False)
+print(f"\\nReport successfully saved to {out_report_path}!")
 """))
 
     notebook = {

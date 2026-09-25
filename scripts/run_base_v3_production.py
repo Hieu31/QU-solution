@@ -25,6 +25,8 @@ def create_production_config(
     data_dir: Path,
     tokenizer_path: Path,
     checkpoints_dir: Path,
+    enc_layers: int = 2,
+    dec_layers: int = 2,
     batch_size: int = 65536,
     bucket_size: int = 131072,
     num_workers: int = 8,
@@ -71,8 +73,8 @@ def create_production_config(
         "save_model": str(checkpoints_dir / "reparos_base_v3_production").replace("\\", "/"),
         "encoder_type": "transformer",
         "decoder_type": "transformer",
-        "enc_layers": 2,
-        "dec_layers": 1,
+        "enc_layers": enc_layers,
+        "dec_layers": dec_layers,
         "heads": 8,
         "hidden_size": 128,
         "word_vec_size": 128,
@@ -121,6 +123,8 @@ def main():
     parser.add_argument("--eval-dir", type=Path, default=Path("data/base_v3_eval"))
     parser.add_argument("--checkpoints-dir", type=Path, default=Path("checkpoints/base_v3_production"))
     parser.add_argument("--device", type=str, default="cuda" if os.environ.get("CUDA_VISIBLE_DEVICES") != "" else "cpu")
+    parser.add_argument("--enc-layers", type=int, default=2, help="Number of encoder layers (default: 2)")
+    parser.add_argument("--dec-layers", type=int, default=2, help="Number of decoder layers (default: 2 for 2E/2D Arm E)")
     parser.add_argument("--batch-size", type=int, default=65536)
     parser.add_argument("--bucket-size", type=int, default=131072)
     parser.add_argument("--num-workers", type=int, default=8)
@@ -136,12 +140,15 @@ def main():
     print("      REPAROS BASE V3 PRODUCTION PRE-TRAINING (RUN C WINNING RECIPE, 4M PAIRS)      ")
     print("=" * 80)
     print(f"Data Dir: {args.data_dir}")
+    print(f"Architecture: {args.enc_layers}E / {args.dec_layers}D (Arm E Production Standard)")
     print(f"Device: {args.device} | Batch Size: {args.batch_size} tokens | Steps: {args.train_steps:,}")
 
     config_path = create_production_config(
         data_dir=args.data_dir,
         tokenizer_path=args.tokenizer,
         checkpoints_dir=args.checkpoints_dir,
+        enc_layers=args.enc_layers,
+        dec_layers=args.dec_layers,
         batch_size=args.batch_size,
         bucket_size=args.bucket_size,
         num_workers=args.num_workers,

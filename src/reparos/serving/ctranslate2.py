@@ -1,10 +1,17 @@
 from __future__ import annotations
 
+import argparse
 import json
 import pickle
 import shutil
 import subprocess
 from pathlib import Path
+
+try:
+    import torch
+    torch.serialization.add_safe_globals([argparse.Namespace])
+except Exception:
+    pass
 
 from reparos.architecture import DecodingConfig
 from reparos.dependencies import require
@@ -43,9 +50,14 @@ def export_opennmt_checkpoint(
             'reference PyTorch checkpoints cannot be converted as OpenNMT; '
             'train/export an OpenNMT-py Base checkpoint for CTranslate2'
         )
-    converter = ctranslate2.converters.OpenNMTPyConverter(
-        str(checkpoint_path), unsafe_deserialization=trust_checkpoint,
-    )
+    try:
+        converter = ctranslate2.converters.OpenNMTPyConverter(
+            str(checkpoint_path), unsafe_deserialization=trust_checkpoint,
+        )
+    except TypeError:
+        converter = ctranslate2.converters.OpenNMTPyConverter(
+            str(checkpoint_path),
+        )
     output_root.mkdir(parents=True, exist_ok=True)
     converter.convert(str(output_root), quantization=quantization, force=True)
     shutil.copy2(tokenizer_path, output_root / 'tokenizer.model')

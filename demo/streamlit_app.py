@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import difflib
 import hashlib
+import html
 import json
 import sys
 import threading
@@ -17,39 +18,57 @@ from st_keyup import st_keyup
 
 ROOT = Path(__file__).resolve().parents[1]
 SRC = ROOT / "src"
+SCRIPTS = ROOT / "scripts"
 if str(SRC) not in sys.path:
     sys.path.insert(0, str(SRC))
+if str(SCRIPTS) not in sys.path:
+    sys.path.insert(0, str(SCRIPTS))
+
+from reparos_confidence_features import ALL_NAMES, candidate_feature_rows
+
+CONFIDENCE_DIR = ROOT / "artifacts/reparos_base_v3_confidence_14088/demo_hgb_deep"
 
 MODEL_CONFIGS = {
-    "finetune_v2": {
+    "v2": {
         "title": "ReparoS Fine-Tune V2",
         "note": "Curriculum-V2-Final · Vocab 8k · CTranslate2 beam 10",
         "ct2_dir": ROOT / "artifacts/reparos-curriculum-v2-final/ctranslate2",
         "tokenizer": ROOT / "artifacts/reparos-curriculum-v2-final/ctranslate2/tokenizer.model",
         "accent": "#f59e0b",
         "default_rep_penalty": 1.0,
+        "vocab_size": "8,000",
     },
-    "base_v3": {
+    "v3": {
         "title": "ReparoS Base V3",
-        "note": "Production Clean · Vocab 12k · 6.5M params · beam 10",
-        "ct2_dir": ROOT / "artifacts/checkpoints/base_v3_production/ctranslate2_export",
-        "tokenizer": ROOT / "artifacts/checkpoints/base_v3_production/ctranslate2_export/tokenizer.model",
+        "note": "2E/2D (Arm E, 7.1M params) · 4M pairs · 50,000 steps · Vocab 12k",
+        "ct2_dir": ROOT / "artifacts/reparos_base_v3_production_checkpoints/checkpoints/base_v3_production/ctranslate2_export",
+        "tokenizer": ROOT / "artifacts/reparos_base_v3_production_checkpoints/checkpoints/base_v3_production/ctranslate2_export/tokenizer.model",
         "accent": "#2563eb",
-        "default_rep_penalty": 1.2,
-    },
-    "continual_v1": {
-        "title": "ReparoS Continual V1",
-        "note": "Continual Fine-Tune Final · Vocab 8k · beam 10",
-        "ct2_dir": ROOT / "artifacts/reparos-continual-v1-final/ctranslate2",
-        "tokenizer": ROOT / "artifacts/reparos-continual-v1-final/ctranslate2/tokenizer.model",
-        "accent": "#10b981",
-        "default_rep_penalty": 1.0,
+        "default_rep_penalty": 1.15,
+        "vocab_size": "12,000",
     },
 }
 
 MODEL_LOCK = threading.RLock()
 FEEDBACK_LOCK = threading.RLock()
 FEEDBACK_PATH = ROOT / "logs" / "demo_feedback.jsonl"
+
+
+@st.cache_resource(show_spinner="Đang tải confidence model...")
+def get_confidence_model():
+    import joblib
+    import sklearn
+
+    manifest = json.loads((CONFIDENCE_DIR / "manifest.json").read_text(encoding="utf-8"))
+    if manifest["sklearn_version"] != sklearn.__version__:
+        raise ValueError("Confidence model requires the scikit-learn version recorded in its manifest")
+    if tuple(manifest["feature_names"]) != ALL_NAMES:
+        raise ValueError("Confidence feature contract does not match the saved model")
+    v3_dir = MODEL_CONFIGS["v3"]["ct2_dir"]
+    for filename, key in (("model.bin", "v3_model_bin_sha256"), ("tokenizer.model", "v3_tokenizer_sha256")):
+        if hashlib.sha256((v3_dir / filename).read_bytes()).hexdigest() != manifest[key]:
+            raise ValueError(f"Confidence model was trained for a different V3 {filename}")
+    return joblib.load(CONFIDENCE_DIR / "model.joblib")
 
 
 @st.cache_resource(show_spinner="Đang tải tokenizer & CTranslate2 model...")
@@ -76,19 +95,29 @@ def infer_single(
     beam_size: int = 10,
     rep_penalty: float = 1.0,
     note: str = "",
+    confidence_mode: bool = False,
 ) -> dict:
     if not query.strip():
         return {"top1": "", "hypotheses": [], "scores": [], "latency_ms": 0.0, "note": note}
 
     t0 = time.perf_counter_ns()
-    tokens = sp.encode_as_pieces(query.strip().lower())
+    tokens = sp.encode_as_pieces(query if confidence_mode else query.strip().lower())
 
     with MODEL_LOCK:
-        kwargs = {
-            "beam_size": beam_size,
-            "num_hypotheses": min(beam_size, 10),
-            "repetition_penalty": rep_penalty,
-        }
+        if confidence_mode:
+            kwargs = {
+                "beam_size": 10,
+                "num_hypotheses": 10,
+                "length_penalty": 0.0,
+                "return_scores": True,
+            }
+        else:
+            kwargs = {
+                "beam_size": beam_size,
+                "num_hypotheses": min(beam_size, 10),
+                "repetition_penalty": rep_penalty,
+                "return_scores": True,
+            }
         results = translator.translate_batch([tokens], **kwargs)
 
     lat_ms = (time.perf_counter_ns() - t0) / 1_000_000.0
@@ -112,19 +141,30 @@ def infer_single(
 
 
 def render_result(title: str, result: dict, accent: str) -> None:
+    confidence = result.get("confidence_gold_exact")
+    top1_confidence = (
+        f'<small style="display:block;color:#475569;font-size:.78rem;margin-top:6px">'
+        f'P(khớp gold): {confidence[0]:.1%}</small>'
+        if confidence is not None else ""
+    )
     st.markdown(f"### {title}")
     st.markdown(
-        f'<div class="answer" style="border-color:{accent}"><span class="answer-label">TOP 1</span>{result["top1"]}</div>',
+        f'<div class="answer" style="border-color:{accent}"><span class="answer-label">TOP 1</span>'
+        f'{html.escape(result["top1"])}{top1_confidence}</div>',
         unsafe_allow_html=True,
     )
     st.metric("Latency", f'{result["latency_ms"]:.2f} ms')
     st.caption(result.get("note", ""))
-    st.markdown("**Top 10 (raw)**")
+    st.markdown("**Top 10**")
+    if confidence is not None:
+        st.caption("Confidence = xác suất candidate khớp câu gold theo bộ diagnostic; mỗi candidate được chấm riêng.")
     scores = result.get("scores", [])
     for rank, hypothesis in enumerate(result["hypotheses"][:10], 1):
-        score = f" · {scores[rank - 1]:.4f}" if rank <= len(scores) else ""
+        score = f"score {scores[rank - 1]:.4f}" if rank <= len(scores) else ""
+        if confidence is not None:
+            score += f" · {confidence[rank - 1]:.1%}"
         st.markdown(
-            f'<div class="candidate"><b>{rank}</b><span>{hypothesis}</span><small>{score}</small></div>',
+            f'<div class="candidate"><b>{rank}</b><span>{html.escape(hypothesis)}</span><small>{html.escape(score)}</small></div>',
             unsafe_allow_html=True,
         )
 
@@ -223,11 +263,63 @@ def main():
         unsafe_allow_html=True,
     )
 
+    # Sidebar / Controls
+    with st.sidebar:
+        st.header("⚙️ Chọn mô hình so sánh")
+        model_keys = list(MODEL_CONFIGS.keys())
+        col_m1, col_m2 = st.columns(2)
+        with col_m1:
+            m1_key = st.selectbox(
+                "Mô hình 1 (Trái)",
+                options=model_keys,
+                index=0,  # opennmt_kaggle_v1
+                format_func=lambda k: MODEL_CONFIGS[k]["title"],
+            )
+        with col_m2:
+            m2_key = st.selectbox(
+                "Mô hình 2 (Phải)",
+                options=model_keys,
+                index=1,  # curriculum_v2
+                format_func=lambda k: MODEL_CONFIGS[k]["title"],
+            )
+
+    # Sidebar / Controls
+    with st.sidebar:
+        st.header("⚙️ Tuỳ chỉnh suy luận")
+        beam_size = st.slider("Beam Size (V2)", min_value=1, max_value=10, value=10, step=1)
+        compute_type = st.selectbox(
+            "Compute Type (V2 CPU)",
+            options=["int8", "float32", "default"],
+            index=0,
+            help="int8: Tối ưu hoá lượng tử hoá tập lệnh AVX2/AVX-512 CPU giúp độ trễ < 8ms. float32: Độ chính xác số học nguyên bản.",
+        )
+        st.caption("V3 confidence: beam 10, cấu hình giải mã cố định theo dữ liệu train.")
+        debounce_ms = st.slider("Debounce khi gõ (ms)", min_value=100, max_value=1000, value=350, step=50)
+
+        st.divider()
+        st.markdown("### 📌 Thông số kỹ thuật 2 mô hình:")
+        st.markdown(
+            """
+            - **Finetune V2**:
+              - Mô hình: `reparos-curriculum-v2-final`
+              - Vocab: 8,000 subwords
+              - Kiến trúc: 2E/2D · FFN 512 (6.5M params)
+              - Latency: ~10-16ms (Beam 10 FP32)
+            - **Base V3**:
+              - Mô hình: `base_v3_production` (4M cặp mẫu)
+              - Kiến trúc: 2E/2D (Arm E, 7.1M params)
+              - Vocab: 12,000 subwords (+50% matrix)
+              - FFN: 2048 (4x dung lượng biểu diễn)
+              - Latency Beam 1: **~3ms**
+              - Latency Beam 10: **~7-8ms** (INT8 CPU)
+            """
+        )
+
     st.title("Vietnamese Search Correction Lab")
-    st.caption("So sánh trực tiếp **ReparoS Fine-Tune V2** · **ReparoS Base V3**")
+    st.caption("So sánh trực tiếp **ReparoS Fine-Tune V2** vs **ReparoS Base V3**")
 
     # Check model artifacts
-    for key in ["finetune_v2", "base_v3"]:
+    for key in ["v2", "v3"]:
         cfg = MODEL_CONFIGS[key]
         if not cfg["ct2_dir"].exists():
             st.error(f"Không tìm thấy thư mục CTranslate2 của {cfg['title']} tại: `{cfg['ct2_dir']}`")
@@ -235,44 +327,6 @@ def main():
         if not cfg["tokenizer"].exists():
             st.error(f"Không tìm thấy file tokenizer của {cfg['title']} tại: `{cfg['tokenizer']}`")
             st.stop()
-
-    # Sidebar / Controls
-    with st.sidebar:
-        st.header("⚙️ Tuỳ chỉnh")
-        beam_size = st.slider("Beam Size", min_value=1, max_value=10, value=10, step=1, help="Beam 1 (Greedy): ~3ms. Beam 4: ~7ms. Beam 10: ~18ms")
-        compute_type = st.selectbox(
-            "Compute Type (CPU)",
-            options=["float32", "int8", "int8_float32"],
-            index=0,
-            help="float32: Độ chính xác tuyệt đối. int8: Tối ưu hoá tập lệnh AVX2/AVX-512 CPU giúp giảm độ trễ 2x.",
-        )
-        v3_rep_penalty = st.slider(
-            "Repetition Penalty (Base V3)",
-            min_value=1.0,
-            max_value=1.5,
-            value=1.2,
-            step=0.05,
-            help="Hệ số phạt lặp từ cho Base V3 (khuyên dùng 1.2)",
-        )
-        show_continual = st.checkbox("Hiển thị thêm Continual V1 (3 cột)", value=False)
-        debounce_ms = st.slider("Debounce khi gõ (ms)", min_value=100, max_value=1000, value=350, step=50)
-
-        st.divider()
-        st.markdown("### 📌 Thông số mô hình & Độ trễ:")
-        st.markdown(
-            """
-            - **Finetune V2**:
-              - Vocab: 8,000 subwords
-              - FFN: 512
-              - Latency: ~10-16ms (Beam 10)
-            - **Base V3**:
-              - Vocab: 12,000 subwords (+50% matrix size)
-              - FFN: 2048 (4x dung lượng FFN biểu diễn)
-              - Latency Beam 1: **~3ms** (SLA production)
-              - Latency Beam 4: **~7-10ms**
-              - Latency Beam 10: **~18-40ms** (FP32 CPU)
-            """
-        )
 
     # Helper for preset button clicks
     if "search_counter" not in st.session_state:
@@ -288,11 +342,13 @@ def main():
 
     # Preset queries for quick testing from real Zero-Click logs
     st.markdown("##### 📂 Ca mẫu thực tế trích xuất từ `zero_click.csv` (Click để test ngay):")
-    tab1, tab2, tab3, tab4 = st.tabs([
-        "🏙️ Địa danh & Chợ & Nút giao",
-        "🏥 Bệnh viện & Trường học & TTTM",
-        "📍 Địa chỉ & Viết tắt hành chính",
-        "⚠️ Gõ dở dang & Vướng phím Telex",
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "🌉 Địa danh & Cầu & Nút giao",
+        "🏥 Bệnh viện & Y tế",
+        "🎓 Trường học & Đại học",
+        "📍 Địa chỉ & Ngõ ngách",
+        "🛒 Chợ, TTTM & Dịch vụ",
+        "⚠️ Lỗi Telex & Gõ dở & Dính phím",
     ])
 
     with tab1:
@@ -305,6 +361,15 @@ def main():
             st.button("🚦 nga 4 hang xanh", on_click=select_preset, args=("nga 4 hang xanh",), use_container_width=True)
         with c4:
             st.button("⚓ nga 3 vung tau", on_click=select_preset, args=("nga 3 vung tau",), use_container_width=True)
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("🔄 vong xoay lang cha ca", on_click=select_preset, args=("vong xoay lang cha ca",), use_container_width=True)
+        with c6:
+            st.button("🚥 nga 6 phu lam", on_click=select_preset, args=("nga 6 phu lam",), use_container_width=True)
+        with c7:
+            st.button("🚌 ben xe mien dong", on_click=select_preset, args=("ben xe mien dong",), use_container_width=True)
+        with c8:
+            st.button("🌉 cau binh trieu 1", on_click=select_preset, args=("cau binh trieu 1",), use_container_width=True)
 
     with tab2:
         c1, c2, c3, c4 = st.columns(4)
@@ -315,9 +380,38 @@ def main():
         with c3:
             st.button("🚑 benh vien 175", on_click=select_preset, args=("benh vien 175",), use_container_width=True)
         with c4:
-            st.button("🎓 dh kinh te tphcm", on_click=select_preset, args=("dh kinh te tphcm",), use_container_width=True)
+            st.button("🩺 bv ung buou tphcm", on_click=select_preset, args=("bv ung buou tphcm",), use_container_width=True)
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("🏥 bv bach mai", on_click=select_preset, args=("bv bach mai",), use_container_width=True)
+        with c6:
+            st.button("💉 tram y te phuong 15", on_click=select_preset, args=("tram y te phuong 15",), use_container_width=True)
+        with c7:
+            st.button("🤰 bv tu du", on_click=select_preset, args=("bv tu du",), use_container_width=True)
+        with c8:
+            st.button("🏢 phong kham da khoa an binh", on_click=select_preset, args=("phong kham da khoa an binh",), use_container_width=True)
 
     with tab3:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.button("🎓 dh kinh te tphcm", on_click=select_preset, args=("dh kinh te tphcm",), use_container_width=True)
+        with c2:
+            st.button("🏫 thpt le quy don", on_click=select_preset, args=("thpt le quy don",), use_container_width=True)
+        with c3:
+            st.button("📚 truong thcs chu van an", on_click=select_preset, args=("truong thcs chu van an",), use_container_width=True)
+        with c4:
+            st.button("⚙️ dh bach khoa hcm", on_click=select_preset, args=("dh bach khoa hcm",), use_container_width=True, help="V2: sinh thừa 'học bách khoa đại học quốc gia...' | V3: đại học bách khoa hcm")
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("🔧 dh su pham ky thuat", on_click=select_preset, args=("dh su pham ky thuat",), use_container_width=True)
+        with c6:
+            st.button("🏦 hoc vien ngan hang", on_click=select_preset, args=("hoc vien ngan hang",), use_container_width=True)
+        with c7:
+            st.button("🎒 truong tieu hoc nguyen hue", on_click=select_preset, args=("truong tieu hoc nguyen hue",), use_container_width=True)
+        with c8:
+            st.button("🏛️ dh quoc gia tp hcm", on_click=select_preset, args=("dh quoc gia tp hcm",), use_container_width=True)
+
+    with tab4:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
             st.button("🏠 86 xo viet nghe tinh p19 binh thanh", on_click=select_preset, args=("86 xo viet nghe tinh p19 binh thanh",), use_container_width=True)
@@ -327,17 +421,55 @@ def main():
             st.button("🚪 hem 212 thoai ngoc hau phuong phu thanh", on_click=select_preset, args=("hem 212 thoai ngoc hau phuong phu thanh",), use_container_width=True)
         with c4:
             st.button("🏭 kcn song than 1", on_click=select_preset, args=("kcn song than 1",), use_container_width=True)
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("📍 so 15 ngo 68 quan nhan thanh xuan", on_click=select_preset, args=("so 15 ngo 68 quan nhan thanh xuan",), use_container_width=True)
+        with c6:
+            st.button("🌾 ap 3 xa tan kien huyen binh chanh", on_click=select_preset, args=("ap 3 xa tan kien huyen binh chanh",), use_container_width=True)
+        with c7:
+            st.button("🏘️ to 5 kp 2 tt cu chi", on_click=select_preset, args=("to 5 kp 2 tt cu chi",), use_container_width=True)
+        with c8:
+            st.button("🏡 duong d1 kdc vietsing thuan an", on_click=select_preset, args=("duong d1 kdc vietsing thuan an",), use_container_width=True)
 
-    with tab4:
+    with tab5:
         c1, c2, c3, c4 = st.columns(4)
         with c1:
-            st.button("⌨️ 158/16 binh quew", on_click=select_preset, args=("158/16 binh quew",), use_container_width=True, help="V2: bình quế (bịa từ) | V3: bình quêw (bảo toàn)")
+            st.button("🏬 tttm aeon mall tan phu", on_click=select_preset, args=("tttm aeon mall tan phu",), use_container_width=True, help="V3: mở rộng chuẩn từ viết tắt TTTM")
+        with c2:
+            st.button("🏮 cho ben thanh quan 1", on_click=select_preset, args=("cho ben thanh quan 1",), use_container_width=True)
+        with c3:
+            st.button("🛍️ vincom mega mall thao dien", on_click=select_preset, args=("vincom mega mall thao dien",), use_container_width=True)
+        with c4:
+            st.button("🛒 sieu thi coopmart quang trung", on_click=select_preset, args=("sieu thi coopmart quang trung",), use_container_width=True)
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("🏪 big c go vap", on_click=select_preset, args=("big c go vap",), use_container_width=True)
+        with c6:
+            st.button("📦 cho kim bien q5", on_click=select_preset, args=("cho kim bien q5",), use_container_width=True)
+        with c7:
+            st.button("☕ thao dien", on_click=select_preset, args=("thao dien",), use_container_width=True, help="V2: bỏ qua không dấu | V3: thảo điền (chuẩn dấu)")
+        with c8:
+            st.button("🏪 circle k nguyen thi thap", on_click=select_preset, args=("circle k nguyen thi thap",), use_container_width=True)
+
+    with tab6:
+        c1, c2, c3, c4 = st.columns(4)
+        with c1:
+            st.button("⌨️ 158/16 binh quew", on_click=select_preset, args=("158/16 binh quew",), use_container_width=True, help="V2: bình quế (bịa từ) | V3: bảo toàn lỗi gõ")
         with c2:
             st.button("🏢 chung cu ha", on_click=select_preset, args=("chung cu ha",), use_container_width=True, help="Gõ dở dang: V2 đoán bừa 'hạ' | V3 giữ 'ha'")
         with c3:
-            st.button("🔤 ngã 6 tahnhf", on_click=select_preset, args=("ngã 6 tahnhf",), use_container_width=True, help="Lỗi gõ phím đảo: tahnhf")
+            st.button("🔤 ngã 6 tahnhf", on_click=select_preset, args=("ngã 6 tahnhf",), use_container_width=True, help="Lỗi gõ phím đảo: tahnhf -> thành")
         with c4:
-            st.button("🏬 tttm aeon mall tan phu", on_click=select_preset, args=("tttm aeon mall tan phu",), use_container_width=True)
+            st.button("🐚 quan oc", on_click=select_preset, args=("quan oc",), use_container_width=True, help="V2: quan goc (bịa từ) | V3: quán ốc (đúng)")
+        c5, c6, c7, c8 = st.columns(4)
+        with c5:
+            st.button("🥩 be thui", on_click=select_preset, args=("be thui",), use_container_width=True, help="V2: bé thui (sai ngữ nghĩa) | V3: bê thui (đúng)")
+        with c6:
+            st.button("🔤 duongf hoangf hoa thasm", on_click=select_preset, args=("duongf hoangf hoa thasm",), use_container_width=True, help="Vướng phím Telex f, s: đường hoàng hoa thám")
+        with c7:
+            st.button("🔤 saiggon", on_click=select_preset, args=("saiggon",), use_container_width=True, help="Lỗi dính lặp phím: saigon")
+        with c8:
+            st.button("🚌 bx mienf tay", on_click=select_preset, args=("bx mienf tay",), use_container_width=True, help="Viết tắt bến xe kèm dính telex f: bx miền tây")
 
     # If user clicked a preset, pass it once on mount of the new key; otherwise pass "" so JS does not rubberband when deleted!
     is_new_preset = (st.session_state["search_counter"] != st.session_state["last_applied_counter"])
@@ -360,8 +492,9 @@ def main():
         st.info("Bắt đầu nhập để chạy so sánh."); return
 
     # Load engines
-    sp_v2, trans_v2 = get_engine(str(MODEL_CONFIGS["finetune_v2"]["ct2_dir"]), str(MODEL_CONFIGS["finetune_v2"]["tokenizer"]), compute_type=compute_type)
-    sp_v3, trans_v3 = get_engine(str(MODEL_CONFIGS["base_v3"]["ct2_dir"]), str(MODEL_CONFIGS["base_v3"]["tokenizer"]), compute_type=compute_type)
+    sp_v2, trans_v2 = get_engine(str(MODEL_CONFIGS["v2"]["ct2_dir"]), str(MODEL_CONFIGS["v2"]["tokenizer"]), compute_type=compute_type)
+    sp_v3, trans_v3 = get_engine(str(MODEL_CONFIGS["v3"]["ct2_dir"]), str(MODEL_CONFIGS["v3"]["tokenizer"]), compute_type="default")
+    confidence_model = get_confidence_model()
 
     with st.spinner("Đang sửa truy vấn…"):
         res_v2 = infer_single(
@@ -371,41 +504,25 @@ def main():
         )
         res_v3 = infer_single(
             sp_v3, trans_v3, query,
-            beam_size=beam_size, rep_penalty=v3_rep_penalty,
-            note=f"CTranslate2 · beam {beam_size} · {compute_type} · rep_pen {v3_rep_penalty}"
+            note="CTranslate2 · beam 10 · default · confidence theo gold",
+            confidence_mode=True,
         )
-
-        res_cont = None
-        if show_continual and MODEL_CONFIGS["continual_v1"]["ct2_dir"].exists():
-            sp_cont, trans_cont = get_engine(str(MODEL_CONFIGS["continual_v1"]["ct2_dir"]), str(MODEL_CONFIGS["continual_v1"]["tokenizer"]))
-            res_cont = infer_single(
-                sp_cont, trans_cont, query,
-                beam_size=beam_size, rep_penalty=1.0,
-                note=f"CTranslate2 · beam {beam_size}"
-            )
+        feature_rows = candidate_feature_rows(query, res_v3["hypotheses"], res_v3["scores"])
+        res_v3["confidence_gold_exact"] = confidence_model.predict_proba(feature_rows)[:, 1].tolist()
 
     # Agreement / Disagreement Banner
     is_agree = (res_v2["top1"].strip().lower() == res_v3["top1"].strip().lower())
     if is_agree:
-        st.success("✅ **Đồng thuận 100%**: Cả Finetune V2 và Base V3 đều trả về cùng kết quả Top 1.")
+        st.success(f"✅ **Đồng thuận 100%**: Cả **{MODEL_CONFIGS['v2']['title']}** và **{MODEL_CONFIGS['v3']['title']}** đều trả về cùng kết quả Top 1.")
     else:
-        st.warning("⚠️ **Có sự khác biệt giữa 2 mô hình!**")
+        st.warning(f"⚠️ **Có sự khác biệt giữa 2 mô hình!**")
 
     # Render Models Side-by-Side in Columns
-    if show_continual and res_cont:
-        col_v2, col_v3, col_cont = st.columns(3)
-        with col_v2:
-            render_result(MODEL_CONFIGS["finetune_v2"]["title"], res_v2, MODEL_CONFIGS["finetune_v2"]["accent"])
-        with col_v3:
-            render_result(MODEL_CONFIGS["base_v3"]["title"], res_v3, MODEL_CONFIGS["base_v3"]["accent"])
-        with col_cont:
-            render_result(MODEL_CONFIGS["continual_v1"]["title"], res_cont, MODEL_CONFIGS["continual_v1"]["accent"])
-    else:
-        col_v2, col_v3 = st.columns(2)
-        with col_v2:
-            render_result(MODEL_CONFIGS["finetune_v2"]["title"], res_v2, MODEL_CONFIGS["finetune_v2"]["accent"])
-        with col_v3:
-            render_result(MODEL_CONFIGS["base_v3"]["title"], res_v3, MODEL_CONFIGS["base_v3"]["accent"])
+    col_v2, col_v3 = st.columns(2)
+    with col_v2:
+        render_result(MODEL_CONFIGS["v2"]["title"], res_v2, MODEL_CONFIGS["v2"]["accent"])
+    with col_v3:
+        render_result(MODEL_CONFIGS["v3"]["title"], res_v3, MODEL_CONFIGS["v3"]["accent"])
 
     # Visual Diff Section if they differ
     if not is_agree:
@@ -414,10 +531,10 @@ def main():
         diff_v2, diff_v3 = highlight_diff(res_v2["top1"], res_v3["top1"])
         col_d1, col_d2 = st.columns(2)
         with col_d1:
-            st.markdown(f"**{MODEL_CONFIGS['finetune_v2']['title']}:**")
+            st.markdown(f"**{MODEL_CONFIGS['v2']['title']}:**")
             st.markdown(f'<div class="diff-box">{diff_v2}</div>', unsafe_allow_html=True)
         with col_d2:
-            st.markdown(f"**{MODEL_CONFIGS['base_v3']['title']}:**")
+            st.markdown(f"**{MODEL_CONFIGS['v3']['title']}:**")
             st.markdown(f'<div class="diff-box">{diff_v3}</div>', unsafe_allow_html=True)
 
     # Feedback Section

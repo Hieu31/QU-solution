@@ -8,8 +8,9 @@ import unicodedata
 from pathlib import Path
 from typing import Dict, List, Tuple
 
-# Force UTF-8 stdout
-sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
+# Force UTF-8 stdout if supported (avoid IPython OutStream AttributeError)
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8', line_buffering=True)
 
 # Ensure src/ is in sys.path
 REPO_ROOT = Path(__file__).resolve().parents[1]
@@ -17,6 +18,12 @@ if (REPO_ROOT / "src").is_dir() and str(REPO_ROOT / "src") not in sys.path:
     sys.path.insert(0, str(REPO_ROOT / "src"))
 
 import sentencepiece as spm
+
+try:
+    import torch
+    torch.serialization.add_safe_globals([argparse.Namespace])
+except Exception:
+    pass
 
 from reparos.data_registry import HELDOUT_BRANDS
 from reparos.serving.ctranslate2 import CTranslate2Predictor, export_opennmt_checkpoint
